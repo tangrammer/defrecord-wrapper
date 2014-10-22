@@ -14,32 +14,39 @@
   (greetings [this] "my example greeting!"))
 
 ;(println (greetings (Example.)))
+(comment
+      (println ~instance)
+     (filter (fn [ty] (some #(.contains  (str ty) %) #{"cylon" "modular" "azondi" "rhizo" "wrapper"}))
+             (->> (supers (class ~instance))))
 
+ )
+
+(defn get-supers-real [i]
+
+
+
+`(~(filter (fn [ty] (some #(.contains  (str ty) %) #{"cylon" "modular" "azondi" "rhizo" "wrapper"}))
+          (->> (supers (class i)))))
+  )
 
 (defn get-supers [instance]
   (let [i# instance]
     '(wrapper.core.Welcome)))
-#_(defrecord ~name  []
-       Welcome
-      (greetings [_]
-        (str "with wrapper: xxxx")))
+
 (defmacro prueba [name r body]
   `(do
-     (defrecord  ~name  []
-        ~(first (get-supers r))
-         ~body)
+     ['defrecord  ~name  []
+      ~`(ffirst (get-supers-real ~r))
+      (quote
+        ~body)]
      ))
 (let [e (Example.)]
-#_(-> (macroexpand '(prueba b  e (greetings [_]
-        (str "with wrapper: xxxx"))))
 
-     pprint
-;;  eval
-     )
  (prueba b  e (greetings [_]
                          (str "with wrapper: xxxx")))
- (greetings (b.))
+ #_(greetings (b.))
   )
+
 
 
 #_(do
@@ -49,3 +56,9 @@
       (assert (extends? Welcome b))
       (s/validate (s/protocol Welcome) i)
       (greetings i))))
+#_(-> (macroexpand '(prueba b  e (greetings [_]
+        (str "with wrapper: xxxx"))))
+
+     pprint
+;;  eval
+     )

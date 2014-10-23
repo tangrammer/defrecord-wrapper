@@ -7,14 +7,21 @@
   (greetings [e] )
   (say_bye [e a b]))
 
+(defprotocol Other
+  (guau [e] ))
+
 (defrecord Example []
   Welcome
   (greetings [this] "my example greeting!")
   (say_bye [this a b] (str "say good bye" a b))
-  )
+  Other
+  (guau [this]
+    "here the other"))
 
 (greetings (Example.))
 ;;=> "my example greeting!"
+
+
 
 (defn get-supers [instance]
      (filter (fn [ty] (some #(.contains  (str ty) %) #{"wrapper"}))
@@ -93,26 +100,27 @@
 
 
 (mr hola)
-(defn add-extend [c p]
-  (filter (fn [[ t _]] (= t  Welcome)) (get-methods (Example.)))
-  (extend c p
-          (extend-impl (adapt-super-impls (first (get-methods (Example.)))))))
+(defn add-extend [the-class the-protocol instance-methods]
+  (let [define-fns (-> (filter (fn [[ t _]] (= t  (:on-interface the-protocol))) instance-methods)
+                       first
+                       adapt-super-impls)]
 
-(add-extend hola Welcome)
+    (extend the-class the-protocol (extend-impl define-fns))
+
+    ))
+
+
+
+
+(add-extend hola Welcome (get-methods (Example.)))
+(add-extend hola Other (get-methods (Example.)))
 
 (extends? Welcome hola)
-(satisfies? Welcome (hola. (Example.)))
+(extends? Other hola)
+(let [olo (hola. (Example.))]
 
-(greetings (hola. (Example.)))
+  (assert  (satisfies? Welcome olo))
+  (assert (satisfies? Other olo))
 
-#_(defrecord Point [e])
-
-#_(extend Point
-  Welcome
-  {:greetings
-   (fn [self] (str "wrapping that " (reduce str ", " (get-supers (:e self))) " --- " (greetings (:e self))))
-   :say_bye
-   (fn [self a b] (say_bye (:e self) a b))
-   })
-
-;(greetings (Point. (Example.)))
+  ((juxt greetings guau) olo)
+  )

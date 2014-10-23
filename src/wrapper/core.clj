@@ -7,9 +7,6 @@
   (greetings [_] "add your message in your impl")
   (say-bye [one two three] "say good bye"))
 
-#_(defprotocol Welcome2
-  (greetings2 [_] "add your message in your impl"))
-
 (defrecord Example []
   Welcome
   (greetings [this] "my example greeting!")
@@ -23,42 +20,13 @@
              (->> (supers (class instance))))
 
  )
-
-(defn get-supers-real [i]
-
-
-
-`(~(filter (fn [ty] (some #(.contains  (str ty) %) #{"cylon" "modular" "azondi" "rhizo" "wrapper"}))
-          (->> (supers (class i)))))
-  )
-
-#_(defn get-supers [instance]
-  (let [i# instance]
-    '(wrapper.core.Welcome)))
-
-(defmacro prueba [name r body]
-  `(do
-     ['defrecord  '~name  []
-      ~`(ffirst (get-supers-real ~r))
-
-      '~body]
-     ))
-
-
-(let [e (Example.)]
-
-
-  (prueba b  e (greetings [_]
-                          (str "with wrapper: xxxx")))
-                                        ;(let [b-i (b.)] (println  (greetings b-i)))
-                                        ;(assert (extends? Welcome b-i))
-  )
+(get-supers (Example.))
 
 (defn get-methods [instance] (map (fn [sup]
-        [sup (->> (.getDeclaredMethods sup)
-                  (map #(vector (count (.getParameterTypes %)) (.getName %)))
-                  (into #{}))])
-      (get-supers instance)))
+                                    [sup (->> (.getDeclaredMethods sup)
+                                              (map #(vector (count (.getParameterTypes %)) (.getName %)))
+                                              (into #{}))])
+                                  (get-supers instance)))
 
 (get-methods (Example.))
 
@@ -72,28 +40,41 @@
 
 (defn adapt-super-impls
   "java-meta-data"
-  [prot-class prot-fns ] (reduce (fn [a [b c]] (conj a [(symbol c) (get-params b)]) ) [prot-class] prot-fns))
+  [[prot-class prot-fns]]
+  [prot-class (map (fn [[b c]] [(symbol c) (get-params b)])
+         prot-fns)]
 
-
-
-
-(defmacro protocol-impl [prot-def]
-  `(do
-     (let [[t# & s#] ~prot-def]
-       (conj
-        (map
-         (fn [[n# p#]]
-           `(~n# ~p# (~n# e ~@(next p#)))
-           )
-         s#)
-        t#
-        )
-       )
-    )
   )
 
-(def definition [wrapper.core.Welcome #{[2 "say_bye"] [0 "greetings"]}])
+(adapt-super-impls (first (get-methods (Example.))))
 
-(protocol-impl (adapt-super-impls wrapper.core.Welcome #{[2 "say_bye"] [0 "greetings"]}))
+(defmacro protocol-impl [prot-def]
+  `(let [[t# s#] ~prot-def]
+     (conj
+      (map
+      (fn [[n# p#]]
+        `(~n# ~p# (~n# ~(symbol "e") ~@(next p#)))
+        )
+      s#)
+     t#)))
 
-(quote e)
+(protocol-impl (adapt-super-impls (first (get-methods (Example.)))))
+
+(defmacro exp [e]
+  `~e
+  )
+
+(defmacro prueba [n body]
+  (list 'conj body '['e] (list symbol n) ''defrecord)
+  )
+
+
+
+
+(prueba "xx" (protocol-impl (adapt-super-impls (first (get-methods (Example.))))))
+
+
+
+
+
+;(xx.)

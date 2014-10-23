@@ -4,8 +4,8 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]))
 
 (defprotocol Welcome
-  (greetings [_] )
-  (say_bye [_ a b]))
+  (greetings [e] )
+  (say_bye [e a b]))
 
 (defrecord Example []
   Welcome
@@ -35,7 +35,7 @@
 
 (defn get-params [n]
   (vec (take (inc n)
-             (conj (map (comp symbol str char) (range 97 123)) (symbol "this")))))
+             (conj (map (comp symbol #(str % ) char) (range 97 123)) (symbol "this")))))
 
 (get-params 3)
 ;;=> [this a b c]
@@ -50,35 +50,69 @@
 ;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
 
 (defmacro protocol-impl [protocol-definition]
-  `(defrecord ~(symbol "zulu") [e#]
-      wrapper.core.Welcome (say_bye [this# a# b#] (say_bye e# a# b#)) (greetings [this] (greetings e#))
-))
-
-(comment      ~@(let [[type# protocol-functions#] ~protocol-definition]
+  ``(defrecord ~(symbol "my-wrapper") [~(symbol "e#")]
+     ~@(let [[type# protocol-functions#] ~protocol-definition]
          (conj
           (map
            (fn [[function-name# function-args#]]
              `(~function-name# ~function-args#
-                               (~function-name# ~(symbol "e") ~@(next function-args#))))
-           protocol-functions#) type#)))
+                               (~function-name# ~(symbol "e#") ~@(next function-args#))))
+           protocol-functions#) type#))
 
- (protocol-impl (adapt-super-impls (first (get-methods (Example.)))))
-
-; (cons 'protocol-impl (adapt-super-impls (first (get-methods (Example.)))))
-
-#_(comment (def xxxx (quote (defrecord a [])))
+))
 
 
-         (def uuu (quote  (clojure.core/defrecord zz [e]
 
-                            Welcome
-                            (greetings [this] "zzz!")
-                            (say_bye [_ _ _] "zzz")
+(protocol-impl (adapt-super-impls (first (get-methods (Example.)))))
+;;=> (clojure.core/defrecord
+;;  my-wrapper
+;;  [e#]
+;;  wrapper.core.Welcome
+;;  (say_bye [this# a# b#] (say_bye e# a# b#))
+;;  (greetings [this#] (greetings e#)))
 
-                            )
-                          ))
+
+(defmacro extend-impl [protocol-definition]
+  `(reduce
+    (fn [c# [function-name# function-args#]]
+      (assoc c# (keyword function-name#)
+             (eval `(fn ~function-args#
+                      (~function-name# (~(keyword "e") ~(symbol "this")) ~@(next function-args#))))))
+    {}
+    (last ~protocol-definition)))
 
 
-         (def ww (clojure.core/defrecord ee [e]
-                   wrapper.core.Welcome (say_bye [this a b] (say_bye e a b)) (greetings [this] (greetings e))))
-)
+
+(defmacro mr [new-name]
+  `(do
+     (defrecord ~new-name [~(symbol "e")])
+
+     )
+
+  )
+
+
+(mr hola)
+(defn add-extend [c p]
+  (filter (fn [[ t _]] (= t  Welcome)) (get-methods (Example.)))
+  (extend c p
+          (extend-impl (adapt-super-impls (first (get-methods (Example.)))))))
+
+(add-extend hola Welcome)
+
+(extends? Welcome hola)
+(satisfies? Welcome (hola. (Example.)))
+
+(greetings (hola. (Example.)))
+
+#_(defrecord Point [e])
+
+#_(extend Point
+  Welcome
+  {:greetings
+   (fn [self] (str "wrapping that " (reduce str ", " (get-supers (:e self))) " --- " (greetings (:e self))))
+   :say_bye
+   (fn [self a b] (say_bye (:e self) a b))
+   })
+
+;(greetings (Point. (Example.)))

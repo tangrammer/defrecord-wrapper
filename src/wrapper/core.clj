@@ -4,77 +4,81 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]))
 
 (defprotocol Welcome
-  (greetings [_] "add your message in your impl")
-  (say-bye [one two three] "say good bye"))
+  (greetings [_] )
+  (say_bye [_ a b]))
 
 (defrecord Example []
   Welcome
   (greetings [this] "my example greeting!")
-  (say-bye [_ _ _] "say good bye")
+  (say_bye [this a b] (str "say good bye" a b))
   )
 
-;(println (greetings (Example.)))
+(greetings (Example.))
+;;=> "my example greeting!"
+
 (defn get-supers [instance]
-      (println instance)
-     (filter (fn [ty] (some #(.contains  (str ty) %) #{"cylon" "modular" "azondi" "rhizo" "wrapper"}))
-             (->> (supers (class instance))))
+     (filter (fn [ty] (some #(.contains  (str ty) %) #{"wrapper"}))
+             (->> (supers (class instance)))))
 
- )
 (get-supers (Example.))
+;;=> (wrapper.core.Welcome)
 
-(defn get-methods [instance] (map (fn [sup]
-                                    [sup (->> (.getDeclaredMethods sup)
-                                              (map #(vector (count (.getParameterTypes %)) (.getName %)))
-                                              (into #{}))])
-                                  (get-supers instance)))
+(defn get-methods [instance]
+  (map (fn [sup]
+         [sup (->> (.getDeclaredMethods sup)
+                   (map #(vector (count (.getParameterTypes %)) (.getName %)))
+                   (into #{}))])
+       (get-supers instance)))
 
 (get-methods (Example.))
+;;=> ([wrapper.core.Welcome #{[2 "say_bye"] [0 "greetings"]}])
 
+(defn get-params [n]
+  (vec (take (inc n)
+             (conj (map (comp symbol str char) (range 97 123)) (symbol "this")))))
 
-(defn get-params [n] (vec (take (inc n)
-                            (conj
-                             (map (comp symbol str char) (range 97 123))
-                             (symbol "this")))))
 (get-params 3)
-
+;;=> [this a b c]
 
 (defn adapt-super-impls
   "java-meta-data"
   [[prot-class prot-fns]]
   [prot-class (map (fn [[b c]] [(symbol c) (get-params b)])
-         prot-fns)]
-
-  )
+         prot-fns)])
 
 (adapt-super-impls (first (get-methods (Example.))))
+;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
 
-(defmacro protocol-impl [prot-def]
-  `(let [[t# s#] ~prot-def]
-     (conj
-      (map
-      (fn [[n# p#]]
-        `(~n# ~p# (~n# ~(symbol "e") ~@(next p#)))
-        )
-      s#)
-     t#)))
+(defmacro protocol-impl [protocol-definition]
+  `(defrecord ~(symbol "zulu") [e#]
+      wrapper.core.Welcome (say_bye [this# a# b#] (say_bye e# a# b#)) (greetings [this] (greetings e#))
+))
 
-(protocol-impl (adapt-super-impls (first (get-methods (Example.)))))
+(comment      ~@(let [[type# protocol-functions#] ~protocol-definition]
+         (conj
+          (map
+           (fn [[function-name# function-args#]]
+             `(~function-name# ~function-args#
+                               (~function-name# ~(symbol "e") ~@(next function-args#))))
+           protocol-functions#) type#)))
 
-(defmacro exp [e]
-  `~e
-  )
+ (protocol-impl (adapt-super-impls (first (get-methods (Example.)))))
 
-(defmacro prueba [n body]
-  (list 'conj body '['e] (list symbol n) ''defrecord)
-  )
+; (cons 'protocol-impl (adapt-super-impls (first (get-methods (Example.)))))
 
-
+#_(comment (def xxxx (quote (defrecord a [])))
 
 
-(prueba "xx" (protocol-impl (adapt-super-impls (first (get-methods (Example.))))))
+         (def uuu (quote  (clojure.core/defrecord zz [e]
+
+                            Welcome
+                            (greetings [this] "zzz!")
+                            (say_bye [_ _ _] "zzz")
+
+                            )
+                          ))
 
 
-
-
-
-;(xx.)
+         (def ww (clojure.core/defrecord ee [e]
+                   wrapper.core.Welcome (say_bye [this a b] (say_bye e a b)) (greetings [this] (greetings e))))
+)

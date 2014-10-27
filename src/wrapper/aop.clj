@@ -50,15 +50,22 @@
     [prot-class (map (fn [[b c]] [(symbol c) (get-params b) (symbol (str prot-ns "/" c))])
                     prot-fns)]))
 
-(defmacro extend-impl [protocol-definition]
-  `(reduce
-    (fn [c# [function-name# function-args# function-ns-name#]]
-      (assoc c# (keyword function-name#)
-             (eval `(fn ~function-args#
-                      (println ~(str "instercepted: " function-name#))
-                      (~function-ns-name# (~(keyword "e") ~(symbol "this")) ~@(next function-args#))))))
-    {}
-    (last ~protocol-definition)))
+(defmacro extend-impl
+  ([protocol-definition]
+     (extend-impl protocol-definition (fn [& more] (println more)))
+     )
+  ([protocol-definition fn-body]
+     `(reduce
+       (fn [c# [function-name# function-args# function-ns-name#]]
+         (assoc c# (keyword function-name#)
+                (eval `(fn ~function-args#
+                         ;;                      (~~fn-body ~(str function-name#) ~@(function-args#))
+                         (println "eeeee" ~(count function-args#))
+
+                         (~~fn-body ~@(next function-args#) {:function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                         (~function-ns-name# (~(keyword "e") ~(symbol "this")) ~@(next function-args#))))))
+       {}
+       (last ~protocol-definition))))
 
 (defmacro mr [new-name]
   `(do
@@ -68,11 +75,14 @@
 
   )
 
-(defn add-extend [the-class the-protocol instance-methods]
-  (let [define-fns (-> (filter (fn [[ t _]] (= t  (:on-interface the-protocol))) instance-methods)
-                       first
-                       adapt-super-impls)]
+(defn add-extend
+  ([the-class the-protocol instance-methods]
+     (add-extend the-class the-protocol instance-methods (fn [& more] (println more)) ))
+  ([the-class the-protocol instance-methods fn-body]
+     (let [define-fns (-> (filter (fn [[ t _]] (= t  (:on-interface the-protocol))) instance-methods)
+                          first
+                          adapt-super-impls)]
 
-    (extend the-class the-protocol (extend-impl define-fns))
+       (extend the-class the-protocol (extend-impl define-fns fn-body))
 
-    ))
+       )))

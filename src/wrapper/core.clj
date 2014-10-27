@@ -2,7 +2,7 @@
   (:require [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
-            [wrapper.model :refer (greetings guau x-x)]
+            [wrapper.model :refer (greetings guau x-x say_bye)]
             [wrapper.aop :refer :all]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)])
   (:import [wrapper.model Example])
@@ -32,22 +32,38 @@
 
 
 (adapt-super-impls (first (get-methods (Example.))))
+
+
+
+
+
 ;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
 
 
 (mr hola)
 
-(add-extend hola wrapper.model/Welcome (get-methods (Example.)))
+(add-extend hola wrapper.model/Welcome (get-methods (Example.))
+
+            (fn [& more]
+              (println "a is" (first more))
+              (println "b is" (second more))
+              (println "function-def" (last more)) ))
+
+
 (add-extend hola wrapper.model/Other (get-methods (Example.)))
 (add-extend hola wrapper.model/Xr (get-methods (Example.)))
 
 (extends? wrapper.model/Welcome hola)
 (extends? wrapper.model/Other hola)
 
+(let [i (hola. (Example.))]
+  (say_bye i "John" "Juan")
+  (greetings i)
+  )
 
-(let [olo (hola. (Example.))]
+#_(let [olo (hola. (Example.))]
   (assert  (satisfies? wrapper.model/Welcome olo))
   (assert (satisfies? wrapper.model/Other olo))
   (s/validate (s/protocol wrapper.model/Welcome) olo)
-  ((juxt greetings guau x-x) olo)
+  (greetings olo)
   )

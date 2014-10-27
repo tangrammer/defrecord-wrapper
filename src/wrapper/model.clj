@@ -12,7 +12,7 @@
 (defrecord Example []
   Welcome
   (greetings [this] "my example greeting!")
-  (say_bye [this a b] (str "say good bye" a b))
+  (say_bye [this a b] (str "saying good bye from " a " to " b))
   Other
   (guau [this]
     "here the other")

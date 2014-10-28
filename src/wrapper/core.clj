@@ -66,6 +66,7 @@
 (adapt-super-impls routes-welcome (last (get-methods (Example.))))
 ;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
 
+
 (extend-impl (adapt-super-impls routes-welcome (last (get-methods (Example.)))))
 
 

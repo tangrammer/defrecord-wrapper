@@ -2,7 +2,8 @@
   (:require [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
-            [clojure.tools.namespace.repl :refer (refresh refresh-all)]))
+;            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+            ))
 
 
 (defn get-supers [instance]
@@ -74,6 +75,7 @@
      )
 
   )
+(defrecord SimpleWrapper [e])
 
 (defn add-extend
   ([the-class the-protocol instance-methods]

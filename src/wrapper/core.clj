@@ -37,31 +37,42 @@
 (adapt-super-impls (first (get-methods (Example.))))
 ;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
 
-;(mr hola)
-(def juan (SimpleWrapper. (Example.)))
-(add-extend SimpleWrapper wrapper.model/Welcome (get-methods (Example.))
+;;(mr hola)
 
-            (fn [& more]
-              (println "a is" (first more))
-              (println "b is" (second more))
-              (println "...function-def..." (last more)) ))
 
-(greetings juan)
-
-(add-extend SimpleWrapper wrapper.model/Other (get-methods (Example.)))
-(add-extend SimpleWrapper wrapper.model/Xr (get-methods (Example.)))
-
-(extends? wrapper.model/Welcome SimpleWrapper)
-(extends? wrapper.model/Other SimpleWrapper)
-
-(let [i (SimpleWrapper. (Example.))]
-  (say_bye i "John" "Juan")
-  (greetings i)
+(let [i (Example.)
+      methods  (get-methods i)]
+  (def juan (SimpleWrapper. i))
+  (map (fn [t] (println "ee" t) (add-extend SimpleWrapper (interface->protocol t) methods))  (get-supers i))
+  (greetings juan)
+  (say_bye juan "John" "Juan")
   )
 
-#_(let [olo (SimpleWrapper. (Example.))]
-  (assert  (satisfies? wrapper.model/Welcome olo))
-  (assert (satisfies? wrapper.model/Other olo))
-  (s/validate (s/protocol wrapper.model/Welcome) olo)
-  (greetings olo)
-  )
+#_(
+ (add-extend SimpleWrapper wrapper.model/Welcome (get-methods (Example.))
+
+             (fn [& more]
+               (println "a is" (first more))
+               (println "b is" (second more))
+               (println "...function-def..." (last more)) ))
+
+ (greetings juan)
+
+ (add-extend SimpleWrapper wrapper.model/Other (get-methods (Example.)))
+ (add-extend SimpleWrapper wrapper.model/Xr (get-methods (Example.)))
+
+ (extends? wrapper.model/Welcome SimpleWrapper)
+ (extends? wrapper.model/Other SimpleWrapper)
+
+ (let [i (SimpleWrapper. (Example.))]
+   (say_bye i "John" "Juan")
+   (greetings i)
+   )
+
+ #_(let [olo (SimpleWrapper. (Example.))]
+     (assert  (satisfies? wrapper.model/Welcome olo))
+     (assert (satisfies? wrapper.model/Other olo))
+     (s/validate (s/protocol wrapper.model/Welcome) olo)
+     (greetings olo)
+     )
+)

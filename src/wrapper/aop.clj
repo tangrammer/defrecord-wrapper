@@ -2,6 +2,7 @@
   (:require [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
+            [bidi.bidi :refer (match-route)]
 ;            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             ))
 
@@ -45,25 +46,31 @@
 
 (defn adapt-super-impls
   "java-meta-data"
-  [[prot-class prot-fns]]
-
-  (let [prot-ns (str/join "." (butlast (str/split (str (str/replace prot-class #"interface " "")) #"\.")) )]
-    [prot-class (map (fn [[b c]] [(symbol c) (get-params b) (symbol (str prot-ns "/" c))])
-                    prot-fns)]))
+  [bidi-routes [prot-class prot-fns]]
+  (let [prot (str/split (str (str/replace prot-class #"interface " "")) #"\.")
+        prot-str (str/join "."  prot )
+        prot-ns (str/join "." (butlast prot) )]
+    [prot-class (map (fn [[b c]]
+                       [(symbol c)
+                        (get-params b)
+                        (symbol (str prot-ns "/" c))
+                        (:handler (match-route bidi-routes prot-str)) ;; intercep protocol protocol
+                        (:handler (match-route bidi-routes(str prot-str "/" c "/"  (str/join "/" (get-params b))))) ;; intercept method
+                        ])
+                    prot-fns) ]))
 
 (defmacro extend-impl
   ([protocol-definition]
-     (extend-impl protocol-definition (fn [& more] (println more)))
-     )
-  ([protocol-definition fn-body]
      `(reduce
-       (fn [c# [function-name# function-args# function-ns-name#]]
+       (fn [c# [function-name# function-args# function-ns-name# fn-body-protocol# fn-body-method#]]
          (assoc c# (keyword function-name#)
                 (eval `(fn ~function-args#
-                         ;;                      (~~fn-body ~(str function-name#) ~@(function-args#))
-                         (println "eeeee" ~(count function-args#))
-
-                         (~~fn-body ~@(next function-args#) {:function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                         ~(when-not (nil? fn-body-protocol#)
+                            `(~fn-body-protocol# ~@(next function-args#) {:function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                            )
+                         ~(when-not (nil? fn-body-method#)
+                            `(~fn-body-method# ~@(next function-args#) {:function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                            )
                          (~function-ns-name# (~(keyword "e") ~(symbol "this")) ~@(next function-args#))))))
        {}
        (last ~protocol-definition))))
@@ -78,13 +85,12 @@
 (defrecord SimpleWrapper [e])
 
 (defn add-extend
-  ([the-class the-protocol instance-methods]
-     (add-extend the-class the-protocol instance-methods (fn [& more] (println more)) ))
-  ([the-class the-protocol instance-methods fn-body]
-     (let [define-fns (-> (filter (fn [[ t _]] (= t  (:on-interface the-protocol))) instance-methods)
-                          first
-                          adapt-super-impls)]
+  ([bidi-routes the-class the-protocol instance-methods]
+     (let [define-fns (->>
+                       (-> (filter (fn [[ t _]] (= t  (:on-interface the-protocol))) instance-methods)
+                           first)
+                       (adapt-super-impls bidi-routes))
 
-       (extend the-class the-protocol (extend-impl define-fns fn-body))
-
+           ]
+       (extend the-class the-protocol (extend-impl define-fns))
        )))

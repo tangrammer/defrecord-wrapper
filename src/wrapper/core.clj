@@ -4,12 +4,41 @@
             [clojure.string :as str ]
             [wrapper.model :refer (greetings guau x-x say_bye)]
             [wrapper.aop :refer :all]
+            [bidi.bidi :refer :all])
 
-;            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            )
-  (:import [wrapper.model Example]
+  (:import [wrapper.model Example ]
            [wrapper.aop SimpleWrapper])
+
   )
+
+(def routes ["protocol" {"" :index
+                         "/method2" :method2
+                         "/method3/" {[:id "/"] :method3}}])
+
+
+(match-route routes "protocol")
+(match-route routes "protocol/method2")
+(match-route routes "protocol/method3/3/")
+
+(def routes-welcome ["" {"wrapper.model.Xr"
+                         {"" (fn [& more] (println "logging Xr" more))
+                          "/x-x/this" (fn [& more] (println "logging x-x" more))}
+                         "wrapper.model.Welcome"
+                         {"" (fn [& more]
+                               (println "you've been bidintercepted :-)" (:function-name (last more))))
+                          "/greetings/this" (fn [this & more]
+                                              (println "Greetings Congratulations!!"))
+                          "/say_bye/this/a/b" (fn [this a b & more]
+                                                (println "Say bye Congratulations!!"))}}])
+
+(match-route routes-welcome "wrapper.model.Xr")
+(match-route routes-welcome "wrapper.model.Welcome")
+(match-route routes-welcome "wrapper.model.Welcome/greetings/this")
+(match-route routes-welcome "wrapper.model.Welcome/say_bye/this/a/b")
+
+(match-route routes-welcome "wrapper.model.Other")
+
+
 
 
 (greetings (Example.))
@@ -34,34 +63,18 @@
 ;;=> [this a b c]
 
 
-(adapt-super-impls (first (get-methods (Example.))))
+(adapt-super-impls routes-welcome (last (get-methods (Example.))))
 ;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
 
-;(mr hola)
-(def juan (SimpleWrapper. (Example.)))
-(add-extend SimpleWrapper wrapper.model/Welcome (get-methods (Example.))
+(extend-impl (adapt-super-impls routes-welcome (last (get-methods (Example.)))))
 
-            (fn [& more]
-              (println "a is" (first more))
-              (println "b is" (second more))
-              (println "...function-def..." (last more)) ))
 
-(greetings juan)
+(let [i (Example.)
+      methods  (get-methods (Example.))
+      juan (SimpleWrapper. i)]
 
-(add-extend SimpleWrapper wrapper.model/Other (get-methods (Example.)))
-(add-extend SimpleWrapper wrapper.model/Xr (get-methods (Example.)))
-
-(extends? wrapper.model/Welcome SimpleWrapper)
-(extends? wrapper.model/Other SimpleWrapper)
-
-(let [i (SimpleWrapper. (Example.))]
-  (say_bye i "John" "Juan")
-  (greetings i)
-  )
-
-#_(let [olo (SimpleWrapper. (Example.))]
-  (assert  (satisfies? wrapper.model/Welcome olo))
-  (assert (satisfies? wrapper.model/Other olo))
-  (s/validate (s/protocol wrapper.model/Welcome) olo)
-  (greetings olo)
-  )
+  (doseq [t (get-supers i)]
+    (add-extend routes-welcome SimpleWrapper (interface->protocol t) methods)
+    )
+  [(greetings juan)
+   (say_bye juan "John" "Juan") (x-x juan)])

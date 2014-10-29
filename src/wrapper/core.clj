@@ -2,14 +2,18 @@
   (:require [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
-            [wrapper.model :refer (greetings guau x-x say_bye)]
+            [wrapper.model :as p]
+            [wrapper.schema  :refer (other-one)]
             [wrapper.aop :refer :all]
-            [bidi.bidi :refer :all])
+            [bidi.bidi :refer :all]
+           )
 
-  (:import [wrapper.model Example ]
-           [wrapper.aop SimpleWrapper])
+  (:import [wrapper.model Example MoreSimpleWrapper]
+)
 
   )
+
+
 
 (def routes ["protocol" {"" :index
                          "/method2" :method2
@@ -41,7 +45,7 @@
 
 
 
-(greetings (Example.))
+;(greetings (Example.))
 ;;=> "my example greeting!"
 
 
@@ -70,12 +74,18 @@
 (extend-impl (adapt-super-impls routes-welcome (last (get-methods (Example.)))))
 
 
-(let [i (Example.)
-      methods  (get-methods (Example.))
-      juan (SimpleWrapper. i)]
+(s/with-fn-validation
 
-  (doseq [t (get-supers i)]
-    (add-extend routes-welcome SimpleWrapper (interface->protocol t) methods)
-    )
-  [(greetings juan)
-   (say_bye juan "John" "Juan") (x-x juan)])
+  (let [i (Example.)
+       methods  (get-methods (Example.))
+       juan (MoreSimpleWrapper. i)]
+
+
+   (doseq [t (get-supers i)]
+     (add-extend routes-welcome MoreSimpleWrapper (interface->protocol t) methods)
+     )
+
+   [(other-one juan)
+    (p/say_bye juan "John" "Juan") (p/x-x juan)]
+
+   ))

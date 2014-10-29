@@ -1,4 +1,7 @@
-(ns wrapper.model)
+(ns wrapper.model
+  (:require [schema.core :as s]))
+
+(defrecord MoreSimpleWrapper [e])
 (defprotocol Welcome
   (greetings [e] )
   (say_bye [e a b]))
@@ -8,6 +11,10 @@
 
 (defprotocol Xr
   (x-x [e]))
+
+(defprotocol TUR
+  (tur [e]))
+
 
 (defrecord Example []
   Welcome

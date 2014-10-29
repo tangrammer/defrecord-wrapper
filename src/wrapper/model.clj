@@ -4,7 +4,8 @@
 (defrecord MoreSimpleWrapper [e])
 (defprotocol Welcome
   (greetings [e] )
-  (say_bye [e a b]))
+  (say_bye [e a b])
+  )
 
 (defprotocol Other
   (guau [e] ))

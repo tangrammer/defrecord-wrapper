@@ -74,7 +74,7 @@
 (extend-impl (adapt-super-impls routes-welcome (last (get-methods (Example.)))))
 
 
-(s/with-fn-validation
+#_(s/with-fn-validation
 
   (let [i (Example.)
        methods  (get-methods (Example.))
@@ -89,3 +89,14 @@
     (p/say_bye juan "John" "Juan") (p/x-x juan)]
 
    ))
+
+(extend MoreSimpleWrapper
+  p/Welcome
+  {:greetings (fn [this]
+      (str "wrapping!! " (p/greetings (:e this)))
+      )
+   :say_bye (fn  [this a b]
+               "good bye !")}
+  )
+(s/with-fn-validation
+  (other-one (MoreSimpleWrapper. (Example.))))

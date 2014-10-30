@@ -8,8 +8,7 @@
             [bidi.bidi :refer :all]
            )
 
-  (:import [wrapper.model Example MoreSimpleWrapper]
-)
+  (:import [wrapper.model Example MoreSimpleWrapper])
 
   )
 

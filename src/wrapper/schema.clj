@@ -1,7 +1,7 @@
 (ns wrapper.schema
   (:require [schema.core :as s]
             [wrapper.model :as p])
-  (:import [wrapper.model Example MoreSimpleWrapper]))
+)
 
 (s/defn greetings :-  s/Str
   [component :- (s/protocol p/Welcome)]

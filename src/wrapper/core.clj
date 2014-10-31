@@ -23,7 +23,10 @@
 (match-route routes "protocol/method2")
 (match-route routes "protocol/method3/3/")
 
-(def routes-welcome ["" {"wrapper.model.Xr"
+(def routes-welcome ["" {"wrapper.model.Other"
+                         {"" (fn [& more] (println "logging Xr" more))
+                          "/guau/this" (fn [this & more] (println "guuauauauauauauaauasdPPPPPPPPPua" this more))}
+                         "wrapper.model.Xr"
                          {"" (fn [& more] (println "logging Xr" more))
                           "/x-x/this" (fn [& more] (println "logging x-x" more))}
                          "wrapper.model.Welcome"
@@ -85,7 +88,7 @@
      )
 
    [(other-one juan)
-    (p/say_bye juan "John" "Juan") (p/x-x juan)]
+    (p/say_bye juan "John" "Juan") (p/x-x juan) (p/guau juan)]
 
    ))
 

@@ -79,12 +79,12 @@
          (assoc c# (keyword function-name#)
                 (eval `(fn ~function-args#
                          ~(when-not (nil? fn-body-protocol#)
-                            `(~fn-body-protocol# (~(keyword "e") ~(first function-args#)) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                            `(~fn-body-protocol#  ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
                                                                           :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
                          ~(when-not (nil? fn-body-method#)
-                            `(~fn-body-method# (~(keyword "e") ~(first function-args#)) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                            `(~fn-body-method#  ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
                                                                    :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )

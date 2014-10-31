@@ -73,7 +73,7 @@
 (extend-impl (adapt-super-impls routes-welcome (last (get-methods (Example.)))))
 
 
-#_(s/with-fn-validation
+(s/with-fn-validation
 
   (let [i (Example.)
        methods  (get-methods (Example.))

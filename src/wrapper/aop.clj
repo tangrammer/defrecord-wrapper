@@ -66,10 +66,16 @@
          (assoc c# (keyword function-name#)
                 (eval `(fn ~function-args#
                          ~(when-not (nil? fn-body-protocol#)
-                            `(~fn-body-protocol# ~@(next function-args#) {:function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                            `(~fn-body-protocol# ~@(next function-args#) {:protocol-name ~(clojure.string/replace (str (first ~protocol-definition))
+                                                                                                                  #"interface "
+                                                                                                                  "")
+                                                                          :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
                          ~(when-not (nil? fn-body-method#)
-                            `(~fn-body-method# ~@(next function-args#) {:function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                            `(~fn-body-method# ~@(next function-args#) {:protocol-name ~(clojure.string/replace (str (first ~protocol-definition))
+                                                                                                                  #"interface "
+                                                                                                                  "")
+                                                                        :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
                          (~function-ns-name# (~(keyword "e") ~(symbol "this")) ~@(next function-args#))))))
        {}

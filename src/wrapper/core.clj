@@ -25,7 +25,7 @@
 
 (def routes-welcome ["" {"wrapper.model.Other"
                          {"" (fn [& more] (println "logging Xr" more))
-                          "/guau/this" (fn [this & more] (println "guuauauauauauauaauasdPPPPPPPPPua" this more))}
+                          "/guau/_" (fn [this & more] (println "guuauauauauauauaauasdPPPPPPPPPua" this more))}
                          "wrapper.model.Xr"
                          {"" (fn [& more] (println "logging Xr" more))
                           "/x-x/this" (fn [& more] (println "logging x-x" more))}
@@ -68,37 +68,41 @@
 (get-params 3)
 ;;=> [this a b c]
 
-
-(adapt-super-impls routes-welcome (last (get-methods (Example.))))
-;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
-
-
-(extend-impl (adapt-super-impls routes-welcome (last (get-methods (Example.)))))
-
-
+(adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.))))
+(extend-impl (adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.)))))
 (s/with-fn-validation
 
-  (let [i (Example.)
-       methods  (get-methods (Example.))
-       juan (MoreSimpleWrapper. i)]
+     (let [i (Example.)
+           methods  (get-methods (Example.))
+           juan (MoreSimpleWrapper. i)]
 
 
-   (doseq [t (get-supers i)]
-     (add-extend routes-welcome MoreSimpleWrapper (interface->protocol t) methods)
-     )
+       (doseq [t (get-supers i)]
+         (add-extend routes-welcome MoreSimpleWrapper (interface->protocol t) methods)
+         )
 
-   [(other-one juan)
-    (p/say_bye juan "John" "Juan") (p/x-x juan) (p/guau juan)]
+       [#_(other-one juan)
+        #_(p/say_bye juan "John" "Juan") #_(p/x-x juan)
+        (p/guau juan)]
 
-   ))
+       ))
+#_(
 
-(extend MoreSimpleWrapper
-  p/Welcome
-  {:greetings (fn [this]
-      (str "wrapping!! " (p/greetings (:e this)))
+   ;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
+
+
+
+
+
+   )
+
+#_( (extend MoreSimpleWrapper
+      p/Welcome
+      {:greetings (fn [this]
+                    (str "wrapping!! " (p/greetings (:e this)))
+                    )
+       :say_bye (fn  [this a b]
+                  "good bye !")}
       )
-   :say_bye (fn  [this a b]
-               "good bye !")}
-  )
-(s/with-fn-validation
-  (other-one (MoreSimpleWrapper. (Example.))))
+    (s/with-fn-validation
+      (other-one (MoreSimpleWrapper. (Example.)))))

@@ -34,10 +34,18 @@
 (defn get-methods [instance]
   (map (fn [sup]
          (let [pi (interface->protocol sup)]
-           [(:on-interface pi) (into #{} (map (fn [[k v]] (vector
-                                                          (dec(count (first (:arglists v))))
-                                                          (str (:name v))
-                                                          )) (:sigs pi)))]))
+           [(:on-interface pi) (into #{} (mapcat (fn [[k v]]
+                                                (map
+                                                 (fn [it]
+                                                  (vector
+                                                   it
+                                                   (:name v)
+                                                   ))
+
+                                                 (:arglists v))
+
+
+                                                ) (:sigs pi)))]))
        (get-supers instance)))
 
 (defn get-params [n]
@@ -46,16 +54,21 @@
 
 (defn adapt-super-impls
   "java-meta-data"
-  [bidi-routes [prot-class prot-fns]]
+  [the-protocol bidi-routes [prot-class prot-fns]]
   (let [prot (str/split (str (str/replace prot-class #"interface " "")) #"\.")
         prot-str (str/join "."  prot )
         prot-ns (str/join "." (butlast prot) )]
     [prot-class (map (fn [[b c]]
+                       (println c (or (match-route bidi-routes (str prot-str "/" c "/"  (str/join "/"  b)))
+                                      (match-route bidi-routes (str/replace (str prot-str "/" c "/"  (str/join "/"  b)) #"_" "this"))
+                                      ))
                        [(symbol c)
-                        (get-params b)
+                        b
                         (symbol (str prot-ns "/" c))
                         (:handler (match-route bidi-routes prot-str)) ;; intercep protocol protocol
-                        (:handler (match-route bidi-routes(str prot-str "/" c "/"  (str/join "/" (get-params b))))) ;; intercept method
+                        (:handler (or (match-route bidi-routes (str prot-str "/" c "/"  (str/join "/"  b)))
+                                      (match-route bidi-routes (str/replace (str prot-str "/" c "/"  (str/join "/"  b)) #"_" "this"))
+                                      )) ;; intercept method
                         ])
                     prot-fns) ]))
 
@@ -66,16 +79,17 @@
          (assoc c# (keyword function-name#)
                 (eval `(fn ~function-args#
                          ~(when-not (nil? fn-body-protocol#)
-                            `(~fn-body-protocol# (~(keyword "e") ~(symbol "this")) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                            `(~fn-body-protocol# (~(keyword "e") ~(first function-args#)) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
                                                                           :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
                          ~(when-not (nil? fn-body-method#)
-                            `(~fn-body-method# (~(keyword "e") ~(symbol "this")) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                            `(~fn-body-method# (~(keyword "e") ~(first function-args#)) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
                                                                    :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
-                         (~function-ns-name# (~(keyword "e") ~(symbol "this")) ~@(next function-args#))))))
+                         (~function-ns-name# (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
+                         ))))
        {}
        (last ~protocol-definition))))
 
@@ -93,7 +107,7 @@
      (let [define-fns (->>
                        (-> (filter (fn [[ t _]] (= t  (:on-interface the-protocol))) instance-methods)
                            first)
-                       (adapt-super-impls bidi-routes))
+                       (adapt-super-impls the-protocol bidi-routes))
 
            ]
        (extend the-class the-protocol (extend-impl define-fns))

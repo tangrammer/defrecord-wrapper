@@ -8,7 +8,7 @@
   )
 
 (defprotocol Other
-  (guau [e] ))
+  (guau [_] ))
 
 (defprotocol Xr
   (x-x [e]))
@@ -22,7 +22,7 @@
   (greetings [this] "my example greeting!")
   (say_bye [this a b] (str "saying good bye from " a " to " b))
   Other
-  (guau [this]
+  (guau [_]
     "here the other")
   Xr
   (x-x [e]

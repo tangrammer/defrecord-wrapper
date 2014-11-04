@@ -4,7 +4,6 @@
             [clojure.string :as str ]
             [wrapper.model :as p]
             [wrapper.schema  :refer (other-one)]
-            [wrapper.aop :refer :all]
             [bidi.bidi :refer :all]
            )
 
@@ -24,18 +23,9 @@
 (match-route routes "protocol/method3/3/")
 
 (def routes-welcome ["" {"wrapper.model.Other"
-                         {"" (fn [& more] (println "logging Xr" more))
-                          "/guau/_" (fn [this & more] (println "guuauauauauauauaauasdPPPPPPPPPua" this more))}
-                         "wrapper.model.Xr"
-                         {"" (fn [& more] (println "logging Xr" more))
-                          "/x-x/this" (fn [& more] (println "logging x-x" more))}
-                         "wrapper.model.Welcome"
-                         {"" (fn [& more]
-                               (println "you've been bidintercepted :-)" (:function-name (last more))))
-                          "/greetings/this" (fn [this & more]
-                                              (println "Greetings Congratulations!!"))
-                          "/say_bye/this/a/b" (fn [this a b & more]
-                                                (println "Say bye Congratulations!!"))}}])
+                         {"" (fn [this & more] (println "intercepted all fn of protocol " this more))
+                          "/guau/_" (fn [this & more] (println "interecepted guau fn" this more))}
+                         }])
 
 (match-route routes-welcome "wrapper.model.Xr")
 (match-route routes-welcome "wrapper.model.Welcome")
@@ -70,12 +60,11 @@
 
 (adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.))))
 (extend-impl (adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.)))))
-(s/with-fn-validation
 
+(s/with-fn-validation
      (let [i (Example.)
            methods  (get-methods (Example.))
            juan (MoreSimpleWrapper. i)]
-
 
        (doseq [t (get-supers i)]
          (add-extend routes-welcome MoreSimpleWrapper (interface->protocol t) methods)
@@ -83,18 +72,12 @@
 
        [#_(other-one juan)
         #_(p/say_bye juan "John" "Juan") #_(p/x-x juan)
-        (p/guau juan)]
+        (p/guau juan)
+        ]
 
-       ))
-#_(
+       )
 
-   ;;=> [wrapper.core.Welcome ([say_bye [this a b]] [greetings [this]])]
-
-
-
-
-
-   )
+     )
 
 #_( (extend MoreSimpleWrapper
       p/Welcome

@@ -23,7 +23,7 @@
   (say_bye [this a b] (str "saying good bye from " a " to " b))
   Other
   (guau [_]
-    "here the other")
+    "Example: guau guau!")
   Xr
   (x-x [e]
     "doing weird x-x algorithm")

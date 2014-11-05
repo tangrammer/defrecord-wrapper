@@ -29,7 +29,7 @@
 (defn get-methods [instance]
   (map (fn [sup]
          (let [pi (interface->protocol sup)]
-           [(:on-interface pi)
+           [ pi
             (into #{} (mapcat (fn [[k v]]
                                 (map
                                  (fn [it]
@@ -42,35 +42,37 @@
   (vec (take (inc n)
              (conj (map (comp symbol #(str % ) char) (range 97 123)) (symbol "this")))))
 
+
+
 (defn adapt-super-impls
   "java-meta-data"
   [the-protocol bidi-routes [prot-class prot-fns]]
-  (let [prot (str/split (str (str/replace prot-class #"interface " "")) #"\.")
+  (let [prot (flatten (map #(str/split % #"\.") (str/split  (str (str/replace (:var prot-class) #"#'" "")) #"/")))
+
         prot-str (str/join "."  prot )
         prot-ns (str/join "." (butlast prot) )]
-    [prot-class (map (fn [[b c]]
-                       (println c (or (match-route bidi-routes (str prot-str "/" c "/"  (str/join "/"  b)))
-                                      (match-route bidi-routes (str/replace (str prot-str "/" c "/"  (str/join "/"  b)) #"_" "this"))
-                                      ))
-                       [(symbol c)
-                        b
-                        (symbol (str prot-ns "/" c))
-                        (when-let [m (->> (let [base prot]
-                                           (reduce (fn [c i]
-                                                     (let [n (str/join "." [(last c) i] )]
-                                                       (conj c n))) [(first base)] (next base)))
-                                         (filter #(match-route bidi-routes %))
-                                         first)]
-                          (:handler (match-route bidi-routes m))
+    #_[prot-class prot-ns]
+    [(eval (symbol (str (str/replace (:var prot-class) #"#'" ""))))
+     (map (fn [[b c]]
+            [(symbol c)
+             b
+             (symbol (str prot-ns "/" c))
+             (when-let [m (->> (let [base prot]
+                                 (reduce (fn [c i]
+                                           (let [n (str/join "." [(last c) i] )]
+                                             (conj c n))) [(first base)] (next base)))
+                               (filter #(match-route bidi-routes %))
+                               first)]
+               (:handler (match-route bidi-routes m))
 
 
-                          )
-                        (:handler (match-route bidi-routes prot-str)) ;; intercep protocol protocol
-                        (:handler (or (match-route bidi-routes (str prot-str "/" c "/"  (str/join "/"  b)))
-                                      (match-route bidi-routes (str/replace (str prot-str "/" c "/"  (str/join "/"  b)) #"_" "this"))
-                                      )) ;; intercept method
-                        ])
-                    prot-fns) ]))
+               )
+             (:handler (match-route bidi-routes prot-str)) ;; intercep protocol protocol
+             (:handler (or (match-route bidi-routes (str prot-str "/" c "/"  (str/join "/"  b)))
+                           (match-route bidi-routes (str/replace (str prot-str "/" c "/"  (str/join "/"  b)) #"_" "this"))
+                           )) ;; intercept method
+             ])
+                       prot-fns) ]))
 
 (defmacro extend-impl
   ([protocol-definition]
@@ -100,11 +102,19 @@
 
 (defn add-extend
   ([bidi-routes the-class the-protocol instance-methods]
+     #_(filter (fn [[ t _]] (= (:on-interface t)  (:on-interface the-protocol))) instance-methods)
+     #_[ (=(:on-interface the-protocol) (:on-interface (first instance-methods )))]
+     (filter (fn [t] (= (:on-interface (first t))  (:on-interface the-protocol))) instance-methods)
+      #_(filter (fn [t] (= (:on-interface  t)  (:on-interface the-protocol))) instance-methods)
+
+     #_instance-methods
      (let [define-fns (->>
-                       (-> (filter (fn [[ t _]] (= t  (:on-interface the-protocol))) instance-methods)
+                       (-> (filter (fn [[t _]] (= t the-protocol)) instance-methods)
                            first)
                        (adapt-super-impls the-protocol bidi-routes))
 
+
            ]
-       (extend the-class the-protocol (extend-impl define-fns))
+                                (extend the-class the-protocol (extend-impl define-fns))
+
        )))

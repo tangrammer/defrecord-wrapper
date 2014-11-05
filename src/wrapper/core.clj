@@ -2,6 +2,7 @@
   (:require [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
+            [wrapper.with-slash.prot :refer (With_This w_t)]
             [wrapper.model :as p]
             [wrapper.aop :refer :all]
             [wrapper.schema  :refer (other-one)]
@@ -62,7 +63,8 @@
 ;;=> (wrapper.core.Welcome)
 
 
-(:sigs (interface->protocol (last (get-supers (Example.)))))
+(symbol (str/replace (str (:var (interface->protocol (last (get-supers (Example.)))))) #"#'" ""))
+ (str (:on-interface (interface->protocol (last (get-supers (Example.))))))
 ;;=> {:x-x {:doc nil, :arglists ([e]), :name x-x}}
 
 
@@ -72,10 +74,12 @@
 
 (get-params 3)
 ;;=> [this a b c]
+(str (first (last (get-methods (Example.)))))
+(adapt-super-impls With_This routes-welcome (last (get-methods (Example.))))
+(get-supers (Example.))
+(extend-impl (adapt-super-impls With_This routes-welcome (last (get-methods (Example.)))))
 
-(adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.))))
-
-(extend-impl (adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.)))))
+(add-extend routes-welcome MoreSimpleWrapper  (interface->protocol (last (get-supers (Example.)))) (get-methods (Example.)))
 
 (s/with-fn-validation
      (let [i (Example.)
@@ -88,7 +92,7 @@
 
        [#_(other-one juan)
         #_(p/say_bye juan "John" "Juan") #_(p/x-x juan)
-        (p/guau juan)
+        (w_t juan)
         ]
 
        )

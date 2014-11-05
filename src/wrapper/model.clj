@@ -30,6 +30,7 @@
   Other
   (guau [_]
     "Example: guau guau!")
-  Xr
-  (x-x [e]
+;  Xr
+
+  #_(x-x [e]
     "doing weird x-x algorithm"))

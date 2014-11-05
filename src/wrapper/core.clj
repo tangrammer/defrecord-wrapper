@@ -23,6 +23,7 @@
 (match-route routes "protocol/method2")
 (match-route routes "protocol/method3/3/")
 
+
 (def routes-welcome ["" {"wrapper.model"
                          {"" (fn [this & more] (println "intercepted namespace wrapper.model **** " this more))
                           ".Other"
@@ -61,7 +62,7 @@
 ;;=> (wrapper.core.Welcome)
 
 
-(:sigs (interface->protocol (second (get-supers (Example.)))))
+(:sigs (interface->protocol (last (get-supers (Example.)))))
 ;;=> {:x-x {:doc nil, :arglists ([e]), :name x-x}}
 
 

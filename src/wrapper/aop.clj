@@ -19,7 +19,7 @@
                            (str/replace #"interface " "")
                            (str/split #"\.")
                            )
-       domain (butlast parsed-interface)
+        domain (map #(str/replace % #"_" "-") (butlast parsed-interface))
         ]
 
     (->(format "%s/%s"(str/join "." domain) (last parsed-interface))

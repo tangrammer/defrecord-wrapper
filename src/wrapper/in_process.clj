@@ -1,9 +1,6 @@
 (ns wrapper.in-process
-  (require [wrapper.aop :refer :all]
-)
-
-  (import [wrapper.core Example])
-  )
+  (require [wrapper.aop :refer :all])
+  (import [wrapper.core Example]))
 
 (defmacro protocol-impl [protocol-definition]
   ``(defrecord ~(symbol "my-wrapper") [~(symbol "e#")]

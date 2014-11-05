@@ -2,9 +2,7 @@
   (:require [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
-            [bidi.bidi :refer (match-route)]
-;            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            ))
+            [bidi.bidi :refer (match-route)]))
 
 
 (defn get-supers [instance]
@@ -26,26 +24,18 @@
 
     (->(format "%s/%s"(str/join "." domain) (last parsed-interface))
        symbol
-       eval
-       )
-
-    ))
+       eval)))
 
 (defn get-methods [instance]
   (map (fn [sup]
          (let [pi (interface->protocol sup)]
-           [(:on-interface pi) (into #{} (mapcat (fn [[k v]]
-                                                (map
-                                                 (fn [it]
-                                                  (vector
-                                                   it
-                                                   (:name v)
-                                                   ))
-
-                                                 (:arglists v))
-
-
-                                                ) (:sigs pi)))]))
+           [(:on-interface pi)
+            (into #{} (mapcat (fn [[k v]]
+                                (map
+                                 (fn [it]
+                                   [it (:name v)])
+                                 (:arglists v)))
+                              (:sigs pi)))]))
        (get-supers instance)))
 
 (defn get-params [n]
@@ -65,6 +55,16 @@
                        [(symbol c)
                         b
                         (symbol (str prot-ns "/" c))
+                        (when-let [m (->> (let [base prot]
+                                           (reduce (fn [c i]
+                                                     (let [n (str/join "." [(last c) i] )]
+                                                       (conj c n))) [(first base)] (next base)))
+                                         (filter #(match-route bidi-routes %))
+                                         first)]
+                          (:handler (match-route bidi-routes m))
+
+
+                          )
                         (:handler (match-route bidi-routes prot-str)) ;; intercep protocol protocol
                         (:handler (or (match-route bidi-routes (str prot-str "/" c "/"  (str/join "/"  b)))
                                       (match-route bidi-routes (str/replace (str prot-str "/" c "/"  (str/join "/"  b)) #"_" "this"))
@@ -79,27 +79,23 @@
          (assoc c# (keyword function-name#)
                 (eval `(fn ~function-args#
                          ~(when-not (nil? fn-body-protocol#)
-                            `(~fn-body-protocol#  ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                            `(~fn-body-protocol#
+                              ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
                                                                           :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
                          ~(when-not (nil? fn-body-method#)
-                            `(~fn-body-method#  ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                            `(~fn-body-method#
+                              ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
                                                                    :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
-                         (~function-ns-name# (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
+                         (~function-ns-name#
+                          (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
                          ))))
        {}
        (last ~protocol-definition))))
 
-(defmacro mr [new-name]
-  `(do
-     (defrecord ~new-name [~(symbol "e")])
-
-     )
-
-  )
 (defrecord SimpleWrapper [e])
 
 (defn add-extend

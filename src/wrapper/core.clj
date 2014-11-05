@@ -3,6 +3,7 @@
             [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
             [wrapper.model :as p]
+            [wrapper.aop :refer :all]
             [wrapper.schema  :refer (other-one)]
             [bidi.bidi :refer :all]
            )
@@ -22,20 +23,33 @@
 (match-route routes "protocol/method2")
 (match-route routes "protocol/method3/3/")
 
-(def routes-welcome ["" {"wrapper.model.Other"
-                         {"" (fn [this & more] (println "intercepted all fn of protocol " this more))
-                          "/guau/_" (fn [this & more] (println "interecepted guau fn" this more))}
-                         }])
+(def routes-welcome ["" {"wrapper.model"
+                         {"" (fn [this & more] (println "intercepted namespace wrapper.model **** " this more))
+                          ".Other"
+                          {"" (fn [this & more] (println "intercepted all fn of protocol Other" this more))
+                           "/guau/_" (fn [this & more] (println "interecepted guau fn" this more))}
+                          ".Xr"
+                          {"" (fn [this & more] (println "intercepted all fn of protocol Xr " this more))
+                           "/x-x/e" (fn [this & more] (println "interecepted x-x fn" this more))}
+                          }}])
 
+(match-route routes-welcome "wrapper.model")
+(match-route routes-welcome "wrapper.model.Other")
+(match-route routes-welcome "wrapper.model.Other/guau/_")
 (match-route routes-welcome "wrapper.model.Xr")
-(match-route routes-welcome "wrapper.model.Welcome")
-(match-route routes-welcome "wrapper.model.Welcome/greetings/this")
-(match-route routes-welcome "wrapper.model.Welcome/say_bye/this/a/b")
+(match-route routes-welcome "wrapper.model.Xr/x-x/p")
+
 
 (match-route routes-welcome "wrapper.model.Other")
-
-
-
+#_(->> (let [base (str/split "wrapper.model.Other" #"\.")]
+               (reduce (fn [c i]
+                         (let [n (str/join "." [(last c) i] )]
+                           (conj c n))) [(first base)] (next base)))
+     (filter #(match-route routes-welcome %))
+     first
+     (match-route routes-welcome)
+     :handler
+     )
 
 ;(greetings (Example.))
 ;;=> "my example greeting!"
@@ -59,6 +73,7 @@
 ;;=> [this a b c]
 
 (adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.))))
+
 (extend-impl (adapt-super-impls p/Xr routes-welcome (last (get-methods (Example.)))))
 
 (s/with-fn-validation

@@ -2,6 +2,7 @@
   (:require [schema.core :as s]))
 
 (defrecord MoreSimpleWrapper [e])
+
 (defprotocol Welcome
   (greetings [e] )
   (say_bye [e a b])
@@ -26,5 +27,4 @@
     "Example: guau guau!")
   Xr
   (x-x [e]
-    "doing weird x-x algorithm")
-  )
+    "doing weird x-x algorithm"))

@@ -42,8 +42,6 @@
   (vec (take (inc n)
              (conj (map (comp symbol #(str % ) char) (range 97 123)) (symbol "this")))))
 
-
-
 (defn adapt-super-impls
   "java-meta-data"
   [the-protocol bidi-routes [prot-class prot-fns]]

@@ -90,11 +90,15 @@
 
                                                                    :function-name ~(str function-name#) :function-args (quote ~function-args#)})
                             )
-                         (~function-ns-name#
-                          (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
-                         (when (or (= "start" ~(str function-name#)) (= "stop" ~(str function-name#) ))
+
+                         (if (or (= "start" ~(str function-name#)) (= "stop" ~(str function-name#) ))
 ;;                           (println "starting stu" )
-                           ~(first function-args#)
+                           (do
+                             (~function-ns-name#
+                              (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
+                             ~(first function-args#))
+                           (~function-ns-name#
+                            (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
                            )))))
        {}
        (last ~protocol-definition))))

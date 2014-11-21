@@ -1,11 +1,11 @@
 (ns wrapper.aop
   (:require [schema.core :as s]
-            [clojure.pprint :refer (pprint print-table)]
             [clojure.string :as str ]
             [bidi.bidi :refer (match-route)]))
 
-
-(defn get-supers [instance]
+(defn get-supers
+  "get all interfaces but default inherited by clojure.lang.PersistentArrayMap"
+  [instance]
   (clojure.set/difference (supers (class instance))
                           #{java.lang.Iterable clojure.lang.Counted clojure.lang.Seqable
                             clojure.lang.IKeywordLookup clojure.lang.Associative clojure.lang.IObj
@@ -13,23 +13,22 @@
                             clojure.lang.IHashEq clojure.lang.IPersistentMap clojure.lang.IRecord
                             java.util.Map clojure.lang.ILookup java.lang.Object}))
 
-(defn interface->protocol [interface]
-  (let [parsed-interface (-> interface
-                           str
-                           (str/replace #"interface " "")
-                           (str/split #"\.")
-                           )
-        domain (map #(str/replace % #"_" "-") (butlast parsed-interface))
-        ]
+(defn interface->protocol
+  "Having a interface class get clojure protocol"
+  [interface]
+  (let [parsed-interface (-> (str interface)
+                             (str/replace #"interface " "")
+                             (str/split #"\."))
+        ns-interface (map #(str/replace % #"_" "-") (butlast parsed-interface))]
 
-    (->(format "%s/%s"(str/join "." domain) (last parsed-interface))
-       symbol
-       eval)))
+    (-> (format "%s/%s"(str/join "." ns-interface) (last parsed-interface))
+        symbol
+        eval)))
 
 (defn get-methods [instance]
   (map (fn [sup]
          (let [pi (interface->protocol sup)]
-           [ pi
+           [pi
             (into #{} (mapcat (fn [[k v]]
                                 (map
                                  (fn [it]
@@ -37,10 +36,6 @@
                                  (:arglists v)))
                               (:sigs pi)))]))
        (get-supers instance)))
-
-(defn get-params [n]
-  (vec (take (inc n)
-             (conj (map (comp symbol #(str % ) char) (range 97 123)) (symbol "this")))))
 
 (defn adapt-super-impls
   "java-meta-data"
@@ -92,7 +87,6 @@
                             )
 
                          (if (or (= "start" ~(str function-name#)) (= "stop" ~(str function-name#) ))
-;;                           (println "starting stu" )
                            (do
                              (~function-ns-name#
                               (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
@@ -107,19 +101,9 @@
 
 (defn add-extend
   ([bidi-routes the-class the-protocol instance-methods]
-     #_(filter (fn [[ t _]] (= (:on-interface t)  (:on-interface the-protocol))) instance-methods)
-     #_[ (=(:on-interface the-protocol) (:on-interface (first instance-methods )))]
      (filter (fn [t] (= (:on-interface (first t))  (:on-interface the-protocol))) instance-methods)
-      #_(filter (fn [t] (= (:on-interface  t)  (:on-interface the-protocol))) instance-methods)
-
-     #_instance-methods
      (let [define-fns (->>
                        (-> (filter (fn [[t _]] (= t the-protocol)) instance-methods)
                            first)
-                       (adapt-super-impls the-protocol bidi-routes))
-
-
-           ]
-                                (extend the-class the-protocol (extend-impl define-fns))
-
-       )))
+                       (adapt-super-impls the-protocol bidi-routes))]
+       (extend the-class the-protocol (extend-impl define-fns)))))

@@ -19,23 +19,24 @@
   (m/greetings c))
 
 (defn logging-access-protocol
-  [fn this & more]
-  (println [fn
-            this
-            more
-            ((juxt :function-name :function-args) (last more))
-            #_(:tangrammer.wrap-component/who (meta this))] )
-  (fn this)
+  [*fn* this & args]
+  (println "LOGGING-ACCESS" [this args] (meta *fn*))
+  (apply *fn* (conj args this))
   )
 
-(def routes-welcome ["" {"wrapper.model"
+(defn  bye
+  [*fn* this & args]
+  (println "BYE FUNCTION" (meta *fn*))
+  (apply *fn* (conj args this))
+  )
+
+(def routes-welcome ["" {"wrapper.model.Welcome/say_bye/e/a/b" bye
+                         "wrapper.model"
                          {"" logging-access-protocol
-                          ".Other"
+                          ".Welcome"
                           {"" logging-access-protocol
-                           "/guau/_" logging-access-protocol}
-                          ".Xr"
-                          {"" logging-access-protocol
-                           "/x-x/e" logging-access-protocol}
+                           "/greetings/_" logging-access-protocol}
+
                           }}])
 
 (deftest schema-related-test
@@ -78,7 +79,12 @@
 
 (aop/add-extend  MoreSimpleWrapper m/Welcome routes-welcome)
 
-(MoreSimpleWrapper. (Example.))
+(let  [e (MoreSimpleWrapper. (Example.))]
+  (println (m/say_bye e "INIT(A)" "END(B)"))
+  (println (m/greetings e ))
+  )
+
+
 
 #_(s/with-fn-validation
      (let [i (Example.)

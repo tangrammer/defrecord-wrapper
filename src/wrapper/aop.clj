@@ -86,7 +86,7 @@
 (defmacro code-extend-protocol
   ([protocol bidi-routes]
      `(let [protocol-definition# (meta-protocol ~protocol)]
-        (println protocol-definition#)
+        ;;(println protocol-definition#)
        (reduce
          (fn [c# [function-name# function-args# function-ns-name#]]
           (assoc c# (keyword function-name#)
@@ -105,7 +105,9 @@
 
                  (if-let [fn-match# (match-bidi-routes ~protocol function-name# function-args# ~bidi-routes)]
                    (eval `(fn ~function-args#
-                            (~fn-match# ~function-ns-name# (~(keyword "e") ~(first function-args#)) ~@(next function-args#))))
+                            (~fn-match# (with-meta ~function-ns-name# {:function-name ~(str function-name#)
+                                                                       :function-args ~(str function-args#)})
+                                        (~(keyword "e") ~(first function-args#)) ~@(next function-args#))))
                    (eval `(fn ~function-args#
                        (~function-ns-name#  (~(keyword "e") ~(first function-args#)) ~@(next function-args#)))))))
         {}

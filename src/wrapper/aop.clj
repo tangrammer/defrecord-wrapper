@@ -25,6 +25,8 @@
         symbol
         eval)))
 
+
+
 (defn get-protocols [instance]
   (map interface->protocol (get-supers instance)))
 
@@ -37,66 +39,73 @@
                    (:arglists v)))
                 (:sigs protocol))))
 
+(defn get-interface-name [protocol]
+  (-> protocol :on str))
 
-(defn adapt-super-impls
-  "java-meta-data"
-  [the-protocol bidi-routes prot-fns]
-  (let [prot (flatten (map #(str/split % #"\.") (str/split  (str (str/replace (:var the-protocol) #"#'" "")) #"/")))
+(defn get-match-options [interface-name function-name function-args]
+  (let [base (str/split interface-name #"\.")]
+    (-> (reduce (fn [c i]
+               (let [n (str/join "." [(last c) i] )]
+                 (conj c n))) [(first base)] (next base))
+        (conj (str interface-name "/" function-name "/"  (str/join "/"  function-args)))
+        (conj (str/replace (str interface-name "/" function-name "/"  (str/join "/"  function-args)) #"_" "this"))
+        sort
+        reverse)))
 
-        prot-str (str/join "."  prot )
-        prot-ns (str/join "." (butlast prot) )]
-    #_[the-protocol prot-ns]
-    [#_(eval (symbol (str (str/replace (:var the-protocol) #"#'" ""))))
-     (map (fn [[c b]]
-            [(symbol c)
-             b
-             (symbol (str prot-ns "/" c))
-             (when-let [m (->> (let [base prot]
-                                 (reduce (fn [c i]
-                                           (let [n (str/join "." [(last c) i] )]
-                                             (conj c n))) [(first base)] (next base)))
-                               (filter #(match-route bidi-routes %))
-                               first)]
-               (:handler (match-route bidi-routes m))
+(defn match-bidi-routes [protocol function-name function-args bidi-routes]
+  (->> (get-match-options (get-interface-name protocol) function-name function-args)
+                  (some #(match-route bidi-routes %))
+                  :handler))
 
+(defn meta-protocol
+  [protocol]
+  (let [interface-name (get-interface-name protocol)
+        interface-name-array (str/split interface-name #"\.")
+        interface-ns (str/join "." (butlast interface-name-array))]
+    (mapv (fn [[function-name function-args]]
+           [function-name
+            function-args
+            (symbol (format "%s/%s" interface-ns function-name))
+            ])
+         (protocol-methods protocol))))
 
-               )
-             (:handler (match-route bidi-routes prot-str)) ;; intercep protocol protocol
-             (:handler (or (match-route bidi-routes (str prot-str "/" c "/"  (str/join "/"  b)))
-                           (match-route bidi-routes (str/replace (str prot-str "/" c "/"  (str/join "/"  b)) #"_" "this"))
-                           )) ;; intercept method
-             ])
-                       prot-fns) ]))
+#_( fn-body-protocol# fn-body-method#)
+#_ (                          ~(when-not (nil? fn-body-protocol#)
+                                 `(~fn-body-protocol#
+                                   ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
-(defmacro extend-impl
-  ([protocol-definition]
-     `(reduce
-       (fn [c# [function-name# function-args# function-ns-name# fn-body-protocol# fn-body-method#]]
-         (assoc c# (keyword function-name#)
-                (eval `(fn ~function-args#
-                         ~(when-not (nil? fn-body-protocol#)
-                            `(~fn-body-protocol#
-                              ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                                                                                    :function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                                 )
+                              ~(when-not (nil? fn-body-method#)
+                                 `(~fn-body-method#
+                                   ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
 
-                                                                          :function-name ~(str function-name#) :function-args (quote ~function-args#)})
-                            )
-                         ~(when-not (nil? fn-body-method#)
-                            `(~fn-body-method#
-                              ~(first function-args#) ~@(next function-args#) {:protocol-name ~(str (first ~protocol-definition))
+                                                                                    :function-name ~(str function-name#) :function-args (quote ~function-args#)})
+                                 ))
 
-                                                                   :function-name ~(str function-name#) :function-args (quote ~function-args#)})
-                            )
+(defmacro code-extend-protocol
+  ([protocol bidi-routes]
+     `(let [protocol-definition# (meta-protocol ~protocol)]
+        (println protocol-definition#)
+       (reduce
+         (fn [c# [function-name# function-args# function-ns-name#]]
+          (assoc c# (keyword function-name#)
+                 [(eval `(fn ~function-args#
+                            (if (or (= "start" ~(str function-name#)) (= "stop" ~(str function-name#) ))
+                              (do
+                                (~function-ns-name#
+                                 (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
+                                ~(first function-args#))
 
-                         (if (or (= "start" ~(str function-name#)) (= "stop" ~(str function-name#) ))
-                           (do
-                             (~function-ns-name#
-                              (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
-                             ~(first function-args#))
-                           (~function-ns-name#
-                            (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
-                           )))))
-       {}
-       (last ~protocol-definition))))
+                              (~function-ns-name#
+                               (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
+
+                              )))
+                  (match-bidi-routes ~protocol function-name# function-args# ~bidi-routes)
+
+                  ]))
+        {}
+         protocol-definition#))))
 
 (defrecord SimpleWrapper [e])
 
@@ -105,5 +114,5 @@
      (let [define-fns (->>
                        (-> (filter (fn [[t _]] (= t the-protocol)) instance-methods)
                            first)
-                       (adapt-super-impls the-protocol bidi-routes))]
-       (extend the-class the-protocol (extend-impl define-fns)))))
+                       (meta-protocol the-protocol #_bidi-routes))]
+       (extend the-class the-protocol (code-extend-protocol define-fns nil)))))

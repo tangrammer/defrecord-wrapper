@@ -18,7 +18,6 @@
   (println "s/protocol??? "(s/validate (s/protocol m/Welcome ) c))
   (m/greetings c))
 
-
 (defn logging-access-protocol
   [this & more]
   (println [ #_this
@@ -35,7 +34,6 @@
                            "/x-x/e" logging-access-protocol}
                           }}])
 
-
 (deftest schema-related-test
   (testing "schema fn"
     (let [result "my example greeting!"]
@@ -47,6 +45,7 @@
   (testing "get example supers"
     (is (= #{wrapper.model.Other wrapper.with_slash.prot.With_This wrapper.model.Welcome}
            (aop/get-supers (Example.))))))
+(aop/protocol->interface-name m/Other)
 
 (deftest interface->protocol-test
   (testing "getting protocol from class symbol"
@@ -69,9 +68,9 @@
   (testing "extracting protocols methods from protocols"
           (is (= #{'[guau [_]]} (aop/protocol-methods (aop/interface->protocol wrapper.model.Other))))))
 
-(aop/adapt-super-impls (aop/interface->protocol wrapper.model.Other) routes-welcome (aop/protocol-methods (aop/interface->protocol wrapper.model.Other)))
-
-(aop/extend-impl (aop/adapt-super-impls With_This routes-welcome (last (aop/get-methods (Example.)))))
+(aop/meta-protocol m/Welcome)
+;;routes-welcome
+(aop/code-extend-protocol m/Welcome routes-welcome)
 
 (aop/add-extend routes-welcome MoreSimpleWrapper  (aop/interface->protocol (last (aop/get-supers (Example.)))) (aop/get-methods (Example.)))
 

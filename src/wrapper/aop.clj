@@ -25,28 +25,29 @@
         symbol
         eval)))
 
-(defn get-methods [instance]
-  (map (fn [sup]
-         (let [pi (interface->protocol sup)]
-           [pi
-            (into #{} (mapcat (fn [[k v]]
-                                (map
-                                 (fn [it]
-                                   [it (:name v)])
-                                 (:arglists v)))
-                              (:sigs pi)))]))
-       (get-supers instance)))
+(defn get-protocols [instance]
+  (map interface->protocol (get-supers instance)))
+
+(defn protocol-methods [protocol]
+  (into #{}
+        (mapcat (fn [[k v]]
+                  (map
+                   (fn [it]
+                     [(:name v) it])
+                   (:arglists v)))
+                (:sigs protocol))))
+
 
 (defn adapt-super-impls
   "java-meta-data"
-  [the-protocol bidi-routes [prot-class prot-fns]]
-  (let [prot (flatten (map #(str/split % #"\.") (str/split  (str (str/replace (:var prot-class) #"#'" "")) #"/")))
+  [the-protocol bidi-routes prot-fns]
+  (let [prot (flatten (map #(str/split % #"\.") (str/split  (str (str/replace (:var the-protocol) #"#'" "")) #"/")))
 
         prot-str (str/join "."  prot )
         prot-ns (str/join "." (butlast prot) )]
-    #_[prot-class prot-ns]
-    [(eval (symbol (str (str/replace (:var prot-class) #"#'" ""))))
-     (map (fn [[b c]]
+    #_[the-protocol prot-ns]
+    [#_(eval (symbol (str (str/replace (:var the-protocol) #"#'" ""))))
+     (map (fn [[c b]]
             [(symbol c)
              b
              (symbol (str prot-ns "/" c))
@@ -101,7 +102,6 @@
 
 (defn add-extend
   ([bidi-routes the-class the-protocol instance-methods]
-     (filter (fn [t] (= (:on-interface (first t))  (:on-interface the-protocol))) instance-methods)
      (let [define-fns (->>
                        (-> (filter (fn [[t _]] (= t the-protocol)) instance-methods)
                            first)

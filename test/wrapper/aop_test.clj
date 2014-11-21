@@ -11,7 +11,7 @@
 
   (:import [wrapper.model Example MoreSimpleWrapper]))
 
-
+;; to delete
 (defn other-one [c]
   (println "satisfies??? "(satisfies? m/Welcome c))
 
@@ -59,12 +59,17 @@
                                     symbol)))
     (is (= wrapper.model.Other (:on-interface (aop/interface->protocol wrapper.model.Other))))))
 
+(deftest get-protocols-test
+  (testing "get protocols"
+    (is (= #{wrapper.model.Other wrapper.with_slash.prot.With_This wrapper.model.Welcome}
+           (into #{} (map :on-interface (aop/get-protocols (Example.))))))))
 
-(map (fn [[i m]] [(:var i) m]) (aop/get-methods (Example.)))
-;;=> ([wrapper.core.Welcome #{[2 "say_bye"] [0 "greetings"]}])
 
+(deftest protocol-methods-test
+  (testing "extracting protocols methods from protocols"
+          (is (= #{'[guau [_]]} (aop/protocol-methods (aop/interface->protocol wrapper.model.Other))))))
 
-(aop/adapt-super-impls With_This routes-welcome (last (aop/get-methods (Example.))))
+(aop/adapt-super-impls (aop/interface->protocol wrapper.model.Other) routes-welcome (aop/protocol-methods (aop/interface->protocol wrapper.model.Other)))
 
 (aop/extend-impl (aop/adapt-super-impls With_This routes-welcome (last (aop/get-methods (Example.)))))
 

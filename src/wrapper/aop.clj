@@ -90,29 +90,29 @@
        (reduce
          (fn [c# [function-name# function-args# function-ns-name#]]
           (assoc c# (keyword function-name#)
-                 [(eval `(fn ~function-args#
-                            (if (or (= "start" ~(str function-name#)) (= "stop" ~(str function-name#) ))
-                              (do
-                                (~function-ns-name#
-                                 (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
-                                ~(first function-args#))
-
+                 #_(eval `(fn ~function-args#
+                          (if (or (= "start" ~(str function-name#)) (= "stop" ~(str function-name#) ))
+                            (do
                               (~function-ns-name#
                                (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
+                              ~(first function-args#))
 
-                              )))
-                  (match-bidi-routes ~protocol function-name# function-args# ~bidi-routes)
+                            (~function-ns-name#
+                             (~(keyword "e") ~(first function-args#)) ~@(next function-args#))
 
-                  ]))
+                            )))
+
+
+                 (if-let [fn-match# (match-bidi-routes ~protocol function-name# function-args# ~bidi-routes)]
+                   (eval `(fn ~function-args#
+                            (~fn-match# ~function-ns-name# (~(keyword "e") ~(first function-args#)) ~@(next function-args#))))
+                   (eval `(fn ~function-args#
+                       (~function-ns-name#  (~(keyword "e") ~(first function-args#)) ~@(next function-args#)))))))
         {}
          protocol-definition#))))
 
 (defrecord SimpleWrapper [e])
 
 (defn add-extend
-  ([bidi-routes the-class the-protocol instance-methods]
-     (let [define-fns (->>
-                       (-> (filter (fn [[t _]] (= t the-protocol)) instance-methods)
-                           first)
-                       (meta-protocol the-protocol #_bidi-routes))]
-       (extend the-class the-protocol (code-extend-protocol define-fns nil)))))
+  ([the-class the-protocol bidi-routes]
+     (extend the-class the-protocol (code-extend-protocol the-protocol bidi-routes))))

@@ -19,10 +19,14 @@
   (m/greetings c))
 
 (defn logging-access-protocol
-  [this & more]
-  (println [ #_this
+  [fn this & more]
+  (println [fn
+            this
+            more
             ((juxt :function-name :function-args) (last more))
-            #_(:tangrammer.wrap-component/who (meta this))] ))
+            #_(:tangrammer.wrap-component/who (meta this))] )
+  (fn this)
+  )
 
 (def routes-welcome ["" {"wrapper.model"
                          {"" logging-access-protocol
@@ -72,9 +76,11 @@
 ;;routes-welcome
 (aop/code-extend-protocol m/Welcome routes-welcome)
 
-(aop/add-extend routes-welcome MoreSimpleWrapper  (aop/interface->protocol (last (aop/get-supers (Example.)))) (aop/get-methods (Example.)))
+(aop/add-extend  MoreSimpleWrapper m/Welcome routes-welcome)
 
-(s/with-fn-validation
+(MoreSimpleWrapper. (Example.))
+
+#_(s/with-fn-validation
      (let [i (Example.)
            methods  (aop/get-methods (Example.))
            juan (MoreSimpleWrapper. i)]

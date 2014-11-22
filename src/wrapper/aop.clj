@@ -24,3 +24,9 @@
 (defn add-extend
   ([the-class the-protocol routes]
      (extend the-class the-protocol (code-extend-protocol the-protocol routes))))
+
+(defn add-extends
+  ([class protocols routes]
+     (doseq [the-protocol protocols]
+       (let [clj-protocol (r/java-interface->clj-protocol the-protocol)]
+         (extend class clj-protocol (code-extend-protocol clj-protocol routes))))))

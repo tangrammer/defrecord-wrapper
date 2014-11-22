@@ -8,7 +8,7 @@
   "get all interfaces but default inherited by clojure.lang.PersistentArrayMap"
   [instance]
   (clojure.set/difference (supers (class instance))
-                          (supers clojure.lang.PersistentArrayMap)))
+                          (merge (supers clojure.lang.PersistentArrayMap) clojure.lang.IKeywordLookup clojure.lang.IRecord)))
 
 (defn java-interface->clj-protocol
   "Having a java interface class (clojure symbol) get a clojure protocol"
@@ -30,8 +30,12 @@
 
 (defn java-interface-ns [protocol]
   (let [interface-name (java-interface-name protocol)
-        interface-name-array (str/split interface-name #"\.")]
-    (str/join "." (butlast interface-name-array))))
+        interface-name-array (str/split interface-name #"\.")
+        ;; hack folder hash
+        ns-interface (map #(str/replace % #"_" "-") (butlast interface-name-array))]
+
+
+    (str/join "." ns-interface)))
 
 (defn protocol-methods [protocol]
   (into #{}

@@ -2,15 +2,20 @@
   (:require [clojure.test :refer :all]
             [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
+            [clojure.repl :refer (apropos dir doc find-doc pst source)]
             [clojure.string :as str ]
             [wrapper.with-slash.prot :refer (With_This w_t)]
+
             [wrapper.model :as m]
+            [wrapper.with-slash.prot :refer (With_This)]
             [wrapper.schema :as ws]
             [wrapper.aop :as aop ]
             [wrapper.reflect :as r ]
-            [bidi.bidi :refer :all])
+            [bidi.bidi :refer :all]
+            )
 
-  (:import [wrapper.model Example MoreSimpleWrapper]))
+  (:import [wrapper.model Example MoreSimpleWrapper ]
+           [wrapper.aop  SimpleWrapper ]))
 
 
 ;; to delete
@@ -33,7 +38,8 @@
   )
 
 (def routes-welcome ["" {"wrapper.model.Welcome/say_bye/e/a/b" bye
-                         "wrapper.mode"
+                         "wrapper.with_slash.prot.With_This" logging-access-protocol
+                         "wrapper.model"
                          {"" logging-access-protocol
                           ".Welcome"
                           {"" logging-access-protocol
@@ -64,6 +70,10 @@
                                     str
                                     (str/replace #"#'" "")
                                     symbol)))
+    (is (= 'wrapper.with_slash.prot/With_This (-> (:var (r/java-interface->clj-protocol wrapper.with_slash.prot.With_This))
+                                    str
+                                    (str/replace #"#'" "")
+                                    symbol)))
     (is (= wrapper.model.Other (:on-interface (r/java-interface->clj-protocol wrapper.model.Other))))))
 
 (deftest get-protocols-test
@@ -74,17 +84,28 @@
 
 (deftest protocol-methods-test
   (testing "extracting protocols methods from protocols"
-          (is (= #{'[guau [_]]} (r/protocol-methods (r/java-interface->clj-protocol wrapper.model.Other))))))
+    (is (= #{'[guau [_]]} (r/protocol-methods (r/java-interface->clj-protocol wrapper.model.Other))))
+    (is (= #{'[w_t [this]]} (r/protocol-methods (r/java-interface->clj-protocol wrapper.with_slash.prot.With_This))))))
 
 (r/meta-protocol m/Welcome)
+(r/meta-protocol With_This)
 ;routes-welcome
 (aop/code-extend-protocol m/Welcome routes-welcome)
 
-(aop/add-extend  MoreSimpleWrapper m/Welcome routes-welcome)
+(doseq [t (r/get-supers (Example.))]
+  (println (:var (r/java-interface->clj-protocol t)))
+  )
+
+(aop/add-extends  MoreSimpleWrapper (r/get-supers (Example.)) routes-welcome)
+
+
+
+
 
 (let  [e (MoreSimpleWrapper. (Example.))]
   (println (m/say_bye e "INIT(A)" "END(B)"))
   (println (m/greetings e ))
+  (println (w_t e ))
   )
 
 

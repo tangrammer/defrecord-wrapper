@@ -89,6 +89,7 @@
 
 
 
+
 #_(s/with-fn-validation
      (let [i (Example.)
            methods  (aop/get-methods (Example.))

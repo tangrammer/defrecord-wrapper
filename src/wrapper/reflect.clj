@@ -42,7 +42,7 @@
                    (:arglists v)))
                 (:sigs protocol))))
 
-;; awful name
+;;TODO awful name
 (defn meta-protocol
   [protocol]
   (mapv (fn [[function-name function-args]]

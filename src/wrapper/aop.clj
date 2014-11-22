@@ -3,13 +3,13 @@
             [wrapper.match :as m]))
 
 (defmacro code-extend-protocol
-  ([protocol bidi-routes]
+  ([protocol routes]
      `(let [protocol-definition# (r/meta-protocol ~protocol)]
         ;;(println protocol-definition#)
        (reduce
          (fn [c# [function-name# function-args# function-ns-name#]]
           (assoc c# (keyword function-name#)
-                 (if-let [fn-match# (m/match-routes (m/get-match-options ~protocol function-name# function-args#) ~bidi-routes)]
+                 (if-let [fn-match# (m/match-routes (m/get-match-options ~protocol function-name# function-args#) ~routes)]
                    (eval `(fn ~function-args#
                             (~fn-match# (with-meta ~function-ns-name# {:function-name ~(str function-name#)
                                                                        :function-args ~(str function-args#)})
@@ -22,5 +22,5 @@
 (defrecord SimpleWrapper [e])
 
 (defn add-extend
-  ([the-class the-protocol bidi-routes]
-     (extend the-class the-protocol (code-extend-protocol the-protocol bidi-routes))))
+  ([the-class the-protocol routes]
+     (extend the-class the-protocol (code-extend-protocol the-protocol routes))))

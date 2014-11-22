@@ -7,9 +7,11 @@
             [wrapper.model :as m]
             [wrapper.schema :as ws]
             [wrapper.aop :as aop ]
+            [wrapper.reflect :as r ]
             [bidi.bidi :refer :all])
 
   (:import [wrapper.model Example MoreSimpleWrapper]))
+
 
 ;; to delete
 (defn other-one [c]
@@ -20,18 +22,18 @@
 
 (defn logging-access-protocol
   [*fn* this & args]
-  (println "LOGGING-ACCESS" [this args] (meta *fn*))
+  (println ">>>>>>>>>> LOGGING-ACCESS" [this args] (meta *fn*))
   (apply *fn* (conj args this))
   )
 
 (defn  bye
   [*fn* this & args]
-  (println "BYE FUNCTION" (meta *fn*))
+  (println ">>>>>>>>>> BYE FUNCTION" (meta *fn*))
   (apply *fn* (conj args this))
   )
 
 (def routes-welcome ["" {"wrapper.model.Welcome/say_bye/e/a/b" bye
-                         "wrapper.model"
+                         "wrapper.mode"
                          {"" logging-access-protocol
                           ".Welcome"
                           {"" logging-access-protocol
@@ -49,32 +51,33 @@
 (deftest get-supers-test
   (testing "get example supers"
     (is (= #{wrapper.model.Other wrapper.with_slash.prot.With_This wrapper.model.Welcome}
-           (aop/get-supers (Example.))))))
-(aop/protocol->interface-name m/Other)
+           (r/get-supers (Example.))))))
+
+;(r/java-interface-name m/Other)
 
 (deftest interface->protocol-test
   (testing "getting protocol from class symbol"
     (is (= '(:on :on-interface :sigs :var :method-map :method-builders)
-           (keys (aop/interface->protocol wrapper.model.Other))) )
+           (keys (r/java-interface->clj-protocol wrapper.model.Other))) )
 
-    (is (= 'wrapper.model/Other (-> (:var (aop/interface->protocol wrapper.model.Other))
+    (is (= 'wrapper.model/Other (-> (:var (r/java-interface->clj-protocol wrapper.model.Other))
                                     str
                                     (str/replace #"#'" "")
                                     symbol)))
-    (is (= wrapper.model.Other (:on-interface (aop/interface->protocol wrapper.model.Other))))))
+    (is (= wrapper.model.Other (:on-interface (r/java-interface->clj-protocol wrapper.model.Other))))))
 
 (deftest get-protocols-test
   (testing "get protocols"
     (is (= #{wrapper.model.Other wrapper.with_slash.prot.With_This wrapper.model.Welcome}
-           (into #{} (map :on-interface (aop/get-protocols (Example.))))))))
+           (into #{} (map :on-interface (r/get-protocols (Example.))))))))
 
 
 (deftest protocol-methods-test
   (testing "extracting protocols methods from protocols"
-          (is (= #{'[guau [_]]} (aop/protocol-methods (aop/interface->protocol wrapper.model.Other))))))
+          (is (= #{'[guau [_]]} (r/protocol-methods (r/java-interface->clj-protocol wrapper.model.Other))))))
 
-(aop/meta-protocol m/Welcome)
-;;routes-welcome
+(r/meta-protocol m/Welcome)
+;routes-welcome
 (aop/code-extend-protocol m/Welcome routes-welcome)
 
 (aop/add-extend  MoreSimpleWrapper m/Welcome routes-welcome)
@@ -92,7 +95,7 @@
            juan (MoreSimpleWrapper. i)]
 
        (doseq [t (aop/get-supers i)]
-         (aop/add-extend routes-welcome MoreSimpleWrapper (aop/interface->protocol t) methods)
+         (aop/add-extend routes-welcome MoreSimpleWrapper (r/java-interface->clj-protocol t) methods)
          )
 
        [#_(other-one juan)

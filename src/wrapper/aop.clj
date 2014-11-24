@@ -12,7 +12,8 @@
                  (if-let [fn-match# (m/match-routes (m/get-match-options ~protocol function-name# function-args#) ~routes)]
                    (eval `(fn ~function-args#
                             (~fn-match# (with-meta ~function-ns-name# {:function-name ~(str function-name#)
-                                                                       :function-args ~(str function-args#)})
+                                                                       :function-args ~(str function-args#)
+                                                                       :wrapper ~(first function-args#)})
                                         (~(keyword "e") ~(first function-args#)) ~@(next function-args#))))
                    (eval `(fn ~function-args#
                        (~function-ns-name#  (~(keyword "e") ~(first function-args#)) ~@(next function-args#)))))))

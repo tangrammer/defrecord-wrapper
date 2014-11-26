@@ -4,6 +4,12 @@
 (defprotocol Matcher
   (match [this protocol function-name function-args]))
 
+(extend-protocol Matcher
+  nil
+  (match [this protocol function-name function-args]
+    nil))
+
+
 (defmacro code-extend-protocol
   ([protocol matcher]
      `(let [protocol-definition# (r/meta-protocol ~protocol)]

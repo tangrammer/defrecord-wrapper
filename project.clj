@@ -1,4 +1,4 @@
-(defproject tangrammer/defrecord-wrapper "0.1.1-SNAPSHOT"
+(defproject tangrammer/defrecord-wrapper "0.1.2-SNAPSHOT"
   :description "wrap clojure.core/defrecord (AOP)"
   :url "https://github.com/tangrammer/defrecord-wrapper"
   :license {:name "MIT License"

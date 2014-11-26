@@ -1,6 +1,5 @@
 (ns defrecord-wrapper.reflect
-  (:require [schema.core :as s]
-            [clojure.string :as str ]))
+  (:require [clojure.string :as str ]))
 
 
 ;; TODO review why I call java-... to some functions here

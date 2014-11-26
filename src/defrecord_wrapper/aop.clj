@@ -14,13 +14,13 @@
                             (~fn-match# (with-meta ~function-ns-name# {:function-name ~(str function-name#)
                                                                        :function-args ~(str function-args#)
                                                                        :wrapper ~(first function-args#)})
-                                        (~(keyword "e") ~(first function-args#)) ~@(next function-args#))))
+                                        (~(keyword "wrapped-record") ~(first function-args#)) ~@(next function-args#))))
                    (eval `(fn ~function-args#
-                       (~function-ns-name#  (~(keyword "e") ~(first function-args#)) ~@(next function-args#)))))))
+                       (~function-ns-name#  (~(keyword "wrapped-record") ~(first function-args#)) ~@(next function-args#)))))))
         {}
          protocol-definition#))))
 
-(defrecord SimpleWrapper [e])
+(defrecord SimpleWrapper [wrapped-record])
 
 (defn add-extend
   ([the-class the-protocol routes]

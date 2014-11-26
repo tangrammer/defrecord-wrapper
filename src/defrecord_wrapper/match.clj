@@ -1,5 +1,5 @@
-(ns wrapper.match
-  (:require [wrapper.reflect :as r]
+(ns defrecord-wrapper.match
+  (:require [defrecord-wrapper.reflect :as r]
             [schema.core :as s]
             [clojure.string :as str ]
             [bidi.bidi :refer (match-route)]))

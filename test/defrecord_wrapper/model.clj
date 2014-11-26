@@ -1,6 +1,6 @@
-(ns wrapper.model
+(ns defrecord-wrapper.model
   (:require [schema.core :as s]
-            [wrapper.with-slash.prot :refer (With_This)]))
+            [defrecord-wrapper.with-slash.prot :refer (With_This)]))
 
 (defrecord MoreSimpleWrapper [e])
 

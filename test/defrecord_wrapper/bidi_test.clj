@@ -1,9 +1,9 @@
-(ns wrapper.bidi-test
+(ns defrecord-wrapper.bidi-test
   (:require [bidi.bidi :refer :all]
             [clojure.string :as str ]
-            [wrapper.aop :as aop]
-            [wrapper.model :as m]
-            [wrapper.aop-test :refer (routes-welcome)]
+            [defrecord-wrapper.aop :as aop]
+            [defrecord-wrapper.model :as m]
+            [defrecord-wrapper.aop-test :refer (routes-welcome)]
             [clojure.test :refer :all]))
 
 (defn starts-with? [st start]

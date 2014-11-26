@@ -1,6 +1,6 @@
-(ns wrapper.aop
-  (:require [wrapper.reflect :as r]
-            [wrapper.match :as m]))
+(ns defrecord-wrapper.aop
+  (:require [defrecord-wrapper.reflect :as r]
+            [defrecord-wrapper.match :as m]))
 
 (defmacro code-extend-protocol
   ([protocol routes]

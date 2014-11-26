@@ -1,4 +1,4 @@
-(ns wrapper.reflect
+(ns defrecord-wrapper.reflect
   (:require [schema.core :as s]
             [clojure.string :as str ]
             [bidi.bidi :refer (match-route)]))

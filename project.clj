@@ -1,8 +1,8 @@
-(defproject tangrammer/wrapper "0.1.4-SNAPSHOT"
+(defproject tangrammer/defrecord-wrapper "0.1.1-SNAPSHOT"
   :description "wrap clojure.core/defrecord (AOP)"
-  :url "http://example.com/FIXME"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :url "https://github.com/tangrammer/defrecord-wrapper"
+  :license {:name "MIT License"
+            :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [prismatic/schema "0.3.2"]
                  [bidi "1.10.4"]]

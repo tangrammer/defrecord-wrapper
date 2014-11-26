@@ -1,21 +1,21 @@
-(ns wrapper.aop-test
+(ns defrecord-wrapper.aop-test
   (:require [clojure.test :refer :all]
             [schema.core :as s]
             [clojure.pprint :refer (pprint print-table)]
             [clojure.repl :refer (apropos dir doc find-doc pst source)]
             [clojure.string :as str ]
-            [wrapper.with-slash.prot :refer (With_This w_t)]
+            [defrecord-wrapper.with-slash.prot :refer (With_This w_t)]
 
-            [wrapper.model :as m]
-            [wrapper.with-slash.prot :refer (With_This)]
-            [wrapper.schema :as ws]
-            [wrapper.aop :as aop ]
-            [wrapper.reflect :as r ]
+            [defrecord-wrapper.model :as m]
+            [defrecord-wrapper.with-slash.prot :refer (With_This)]
+            [defrecord-wrapper.schema :as ws]
+            [defrecord-wrapper.aop :as aop ]
+            [defrecord-wrapper.reflect :as r ]
             [bidi.bidi :refer :all]
             )
 
-  (:import [wrapper.model Example MoreSimpleWrapper ]
-           [wrapper.aop  SimpleWrapper ]))
+  (:import [defrecord_wrapper.model Example MoreSimpleWrapper ]
+           [defrecord_wrapper.aop  SimpleWrapper ]))
 
 
 ;; to delete
@@ -37,9 +37,9 @@
   (apply *fn* (conj args this))
   )
 
-(def routes-welcome ["" {"wrapper.model.Welcome/say_bye/e/a/b" bye
-                         "wrapper.with_slash.prot.With_This" logging-access-protocol
-                         "wrapper.model"
+(def routes-welcome ["" {"defrecord_wrapper.model.Welcome/say_bye/e/a/b" bye
+                         "defrecord_wrapper.with_slash.prot.With_This" logging-access-protocol
+                         "defrecord_wrapper.model"
                          {"" logging-access-protocol
                           ".Welcome"
                           {"" logging-access-protocol
@@ -56,7 +56,7 @@
 
 (deftest get-supers-test
   (testing "get example supers"
-    (is (= #{wrapper.model.Other wrapper.with_slash.prot.With_This wrapper.model.Welcome}
+    (is (= #{defrecord_wrapper.model.Other defrecord_wrapper.with_slash.prot.With_This defrecord_wrapper.model.Welcome}
            (r/get-supers (Example.))))))
 
 ;(r/java-interface-name m/Other)
@@ -64,28 +64,28 @@
 (deftest interface->protocol-test
   (testing "getting protocol from class symbol"
     (is (= '(:on :on-interface :sigs :var :method-map :method-builders)
-           (keys (r/java-interface->clj-protocol wrapper.model.Other))) )
+           (keys (r/java-interface->clj-protocol defrecord_wrapper.model.Other))) )
 
-    (is (= 'wrapper.model/Other (-> (:var (r/java-interface->clj-protocol wrapper.model.Other))
+    (is (= 'wrapper.model/Other (-> (:var (r/java-interface->clj-protocol defrecord_wrapper.model.Other))
                                     str
                                     (str/replace #"#'" "")
                                     symbol)))
-    (is (= 'wrapper.with_slash.prot/With_This (-> (:var (r/java-interface->clj-protocol wrapper.with_slash.prot.With_This))
+    (is (= 'defrecord_wrapper.with_slash.prot/With_This (-> (:var (r/java-interface->clj-protocol defrecord_wrapper.with_slash.prot.With_This))
                                     str
                                     (str/replace #"#'" "")
                                     symbol)))
-    (is (= wrapper.model.Other (:on-interface (r/java-interface->clj-protocol wrapper.model.Other))))))
+    (is (= defrecord_wrapper.model.Other (:on-interface (r/java-interface->clj-protocol defrecord_wrapper.model.Other))))))
 
 (deftest get-protocols-test
   (testing "get protocols"
-    (is (= #{wrapper.model.Other wrapper.with_slash.prot.With_This wrapper.model.Welcome}
+    (is (= #{defrecord_wrapper.model.Other defrecord_wrapper.with_slash.prot.With_This defrecord_wrapper.model.Welcome}
            (into #{} (map :on-interface (r/get-protocols (Example.))))))))
 
 
 (deftest protocol-methods-test
   (testing "extracting protocols methods from protocols"
-    (is (= #{'[guau [_]]} (r/protocol-methods (r/java-interface->clj-protocol wrapper.model.Other))))
-    (is (= #{'[w_t [this]]} (r/protocol-methods (r/java-interface->clj-protocol wrapper.with_slash.prot.With_This))))))
+    (is (= #{'[guau [_]]} (r/protocol-methods (r/java-interface->clj-protocol defrecord_wrapper.model.Other))))
+    (is (= #{'[w_t [this]]} (r/protocol-methods (r/java-interface->clj-protocol defrecord_wrapper.with_slash.prot.With_This))))))
 
 (r/meta-protocol m/Welcome)
 (r/meta-protocol With_This)

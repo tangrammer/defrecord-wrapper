@@ -1,15 +1,17 @@
 (ns defrecord-wrapper.aop
-  (:require [defrecord-wrapper.reflect :as r]
-            [defrecord-wrapper.match :as m]))
+  (:require [defrecord-wrapper.reflect :as r]))
+
+(defprotocol Matcher
+  (match [this protocol function-name function-args]))
 
 (defmacro code-extend-protocol
-  ([protocol routes]
+  ([protocol matcher]
      `(let [protocol-definition# (r/meta-protocol ~protocol)]
         ;;(println protocol-definition#)
        (reduce
          (fn [c# [function-name# function-args# function-ns-name#]]
           (assoc c# (keyword function-name#)
-                 (if-let [fn-match# (m/match-routes (m/get-match-options ~protocol function-name# function-args#) ~routes)]
+                 (if-let [fn-match# (match ~matcher ~protocol function-name# function-args#)]
                    (eval `(fn ~function-args#
                             (~fn-match# (with-meta ~function-ns-name# {:function-name ~(str function-name#)
                                                                        :function-args ~(str function-args#)
@@ -23,11 +25,11 @@
 (defrecord SimpleWrapper [wrapped-record])
 
 (defn add-extend
-  ([the-class the-protocol routes]
-     (extend the-class the-protocol (code-extend-protocol the-protocol routes))))
+  ([the-class the-protocol matcher]
+     (extend the-class the-protocol (code-extend-protocol the-protocol matcher))))
 
 (defn add-extends
-  ([class protocols routes]
+  ([class protocols matcher]
      (doseq [the-protocol protocols]
        (let [clj-protocol (r/java-interface->clj-protocol the-protocol)]
-         (extend class clj-protocol (code-extend-protocol clj-protocol routes))))))
+         (extend class clj-protocol (code-extend-protocol clj-protocol matcher))))))

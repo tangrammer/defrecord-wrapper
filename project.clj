@@ -3,9 +3,7 @@
   :url "https://github.com/tangrammer/defrecord-wrapper"
   :license {:name "MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [prismatic/schema "0.3.2"]
-                 [bidi "1.10.4"]]
+  :dependencies [[org.clojure/clojure "1.6.0"]]
   :profiles {:dev {:dependencies [[prismatic/schema "0.3.2"]
-                                  [bidi "1.10.4"]]}}
+                                  [tangrammer/bidi-wrapper-matcher "0.1.0-SNAPSHOT"]]}}
   )

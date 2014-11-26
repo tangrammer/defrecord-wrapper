@@ -10,11 +10,12 @@
             [defrecord-wrapper.schema :as ws]
             [defrecord-wrapper.aop :as aop ]
             [defrecord-wrapper.reflect :as r ]
-            [bidi.bidi :refer :all]
+            [bidi-wrapper-matcher.bidi-matcher :as bm]
+
             )
 
-  (:import [defrecord_wrapper.model Example MoreSimpleWrapper ]
-           [defrecord_wrapper.aop  SimpleWrapper ]))
+  (:import [defrecord_wrapper.model Example]
+           [defrecord_wrapper.aop SimpleWrapper]))
 
 
 ;; to delete
@@ -35,16 +36,6 @@
   (println ">>>>>>>>>> BYE FUNCTION" (meta *fn*))
   (apply *fn* (conj args this))
   )
-
-(def routes-welcome ["" {"defrecord_wrapper.model.Welcome/say_bye/e/a/b" bye
-                         "defrecord_wrapper.with_slash.prot.With_This" logging-access-protocol
-                         "defrecord_wrapper.model"
-                         {"" logging-access-protocol
-                          ".Welcome"
-                          {"" logging-access-protocol
-                           "/greetings/_" logging-access-protocol}
-
-                          }}])
 
 (deftest schema-related-test
   (testing "schema fn"
@@ -88,20 +79,26 @@
 
 (r/meta-protocol m/Welcome)
 (r/meta-protocol With_This)
-;routes-welcome
-(aop/code-extend-protocol m/Welcome routes-welcome)
+                                        ;routes-welcome
+(def routes-welcome ["" {"defrecord_wrapper.model.Welcome/say_bye/e/a/b" bye
+                         "defrecord_wrapper.with_slash.prot.With_This" logging-access-protocol
+                         "defrecord_wrapper.model"
+                         {"" logging-access-protocol
+                          ".Welcome"
+                          {"" logging-access-protocol
+                           "/greetings/_" logging-access-protocol}
 
-(doseq [t (r/get-specific-supers (Example.))]
-  (println (:var (r/java-interface->clj-protocol t)))
-  )
-
-(aop/add-extends MoreSimpleWrapper (r/get-specific-supers (Example.)) routes-welcome)
+                          }}])
 
 
+(def bidi-matcher (bm/new-bidi-matcher :routes routes-welcome))
+
+(aop/code-extend-protocol m/Welcome bidi-matcher)
+
+(aop/add-extends SimpleWrapper (r/get-specific-supers (Example.)) bidi-matcher)
 
 
-
-(let  [e (MoreSimpleWrapper. (Example.))]
+(let  [e (SimpleWrapper. (Example.))]
   (println (m/say_bye e "INIT(A)" "END(B)"))
   (println (m/greetings e ))
   (println (w_t e ))

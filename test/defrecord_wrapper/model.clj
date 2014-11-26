@@ -1,8 +1,5 @@
 (ns defrecord-wrapper.model
-  (:require [schema.core :as s]
-            [defrecord-wrapper.with-slash.prot :refer (With_This)]))
-
-(defrecord MoreSimpleWrapper [e])
+  (:require [defrecord-wrapper.with-slash.prot :refer (With_This)]))
 
 (defprotocol Welcome
   (greetings [e] )

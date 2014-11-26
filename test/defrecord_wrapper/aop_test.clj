@@ -5,7 +5,6 @@
             [clojure.repl :refer (apropos dir doc find-doc pst source)]
             [clojure.string :as str ]
             [defrecord-wrapper.with-slash.prot :refer (With_This w_t)]
-
             [defrecord-wrapper.model :as m]
             [defrecord-wrapper.with-slash.prot :refer (With_This)]
             [defrecord-wrapper.schema :as ws]
@@ -54,10 +53,10 @@
       (is (= result  (m/greetings (Example.)))))))
 
 
-(deftest get-supers-test
+(deftest get-specific-supers-test
   (testing "get example supers"
     (is (= #{defrecord_wrapper.model.Other defrecord_wrapper.with_slash.prot.With_This defrecord_wrapper.model.Welcome}
-           (r/get-supers (Example.))))))
+           (r/get-specific-supers (Example.))))))
 
 ;(r/java-interface-name m/Other)
 
@@ -92,11 +91,11 @@
 ;routes-welcome
 (aop/code-extend-protocol m/Welcome routes-welcome)
 
-(doseq [t (r/get-supers (Example.))]
+(doseq [t (r/get-specific-supers (Example.))]
   (println (:var (r/java-interface->clj-protocol t)))
   )
 
-(aop/add-extends  MoreSimpleWrapper (r/get-supers (Example.)) routes-welcome)
+(aop/add-extends MoreSimpleWrapper (r/get-specific-supers (Example.)) routes-welcome)
 
 
 
@@ -116,7 +115,7 @@
            methods  (aop/get-methods (Example.))
            juan (MoreSimpleWrapper. i)]
 
-       (doseq [t (aop/get-supers i)]
+       (doseq [t (aop/get-specific-supers i)]
          (aop/add-extend routes-welcome MoreSimpleWrapper (r/java-interface->clj-protocol t) methods)
          )
 

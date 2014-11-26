@@ -2,10 +2,12 @@
   (:require [schema.core :as s]
             [clojure.string :as str ]
             [bidi.bidi :refer (match-route)]))
+
+
 ;; TODO review why I call java-... to some functions here
 
-(defn get-supers
-  "get all interfaces but default inherited by clojure.lang.PersistentArrayMap"
+(defn get-specific-supers
+  "get all interfaces but default inherited by clojure.core/defrecord instances"
   [instance]
   (clojure.set/difference (supers (class instance))
                           (merge (supers clojure.lang.PersistentArrayMap) clojure.lang.IKeywordLookup clojure.lang.IRecord)))
@@ -23,7 +25,7 @@
         eval)))
 
 (defn get-protocols [instance]
-  (map java-interface->clj-protocol (get-supers instance)))
+  (map java-interface->clj-protocol (get-specific-supers instance)))
 
 (defn java-interface-name [protocol]
   (-> protocol :on str))

@@ -55,7 +55,8 @@ This library lets you apply middleware to protocol implementations of [clojure.c
 
 (aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) (ExampleMatcher.))
 
-;; here wrapping your defrecord instance with SimpleWrapper
+;; here wrapping your defrecord instance with SimpleWrapper 
+
 (def my-wrapped-example (SimpleWraper. my-example-instance))
 
 
@@ -63,13 +64,14 @@ This library lets you apply middleware to protocol implementations of [clojure.c
 
 (println (greetings my-wrapped-example))
 
-;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} nil] {:function-args [e], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name greetings}
+;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} nil] 
+;; ...  {:function-args [e], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name greetings}
 ;;=> my example greeting!
 
 
 (say-bye my-wrapped-example "clojure" "java")
-
-;;=> >>>>>>>>>> BYE FUNCTION {:function-args [e a b], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name say_bye}
+;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} (clojure java)] 
+;; ... {:function-args [e a b], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name say_bye}
 ;;=> saying good bye from clojure to java
 
 

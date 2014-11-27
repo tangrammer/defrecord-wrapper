@@ -2,6 +2,15 @@
 
 This library lets you apply middleware to protocol implementations of [clojure.core/defrecord](https://clojuredocs.org/clojure.core/defrecord) in the same way as AOP does.
 
+As wikipedia defines [AOP](http://en.wikipedia.org/wiki/Aspect-oriented_programming): 
+> In computing, aspect-oriented programming (AOP) is a programming paradigm that aims to increase modularity by allowing the separation of cross-cutting concerns. AOP forms a basis for aspect-oriented software development.   
+> ...   
+> Logging exemplifies a crosscutting concern because a logging strategy necessarily affects every logged part of the system. Logging thereby crosscuts all logged classes and methods....
+
+**Common and practical scenario**   
+Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuartsierra/component](https://github.com/stuartsierra/component) enforces you to work with defrecords (or simply maps). Using this defrecord-wrapper dependency you can totally or partially intercept your protocols functions 
+
+
 #### Releases and Dependency Information
 
 

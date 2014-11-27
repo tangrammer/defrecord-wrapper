@@ -16,7 +16,7 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 
 ```clojure
 
-[tangrammer/defrecord-wrapper "0.1.3"]
+[tangrammer/defrecord-wrapper "0.1.4"]
 
 ```
 
@@ -46,23 +46,18 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 
 (def my-example-instance (Example.))
 
-;; here your aop/Matcher implementation and fn middleware to apply
+;; here your fn middleware to apply
 
 (defn logging-access-protocol
   [*fn* this & args]
-  (println ">>>>>>>>>> LOGGING-ACCESS" [this args] (meta *fn*))
+  (println ">> LOGGING-ACCESS " [this args])
+  (println ">>"(meta *fn*))
   (apply *fn* (conj args this)))
-
-(defrecord ExampleMatcher []
-  aop/Matcher
-  (match [this protocol function-name function-args]
-      ;; logging all fns calls
-      logging-access-protocol))
 
 
 ;; here extending SimpleWrapper with your defrecord instance functions protocols
 
-(aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) (ExampleMatcher.))
+(aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) logging-access-protocol)
 
 ;; here wrapping your defrecord instance with SimpleWrapper 
 
@@ -73,21 +68,20 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 
 (println (greetings my-wrapped-example))
 
-;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} nil] 
-;; ...  {:function-args [e], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name greetings}
+;;=> >> LOGGING-ACCESS  [#yourapp.your_ns.Example{} nil]
+;;=> >> {:function-args [e], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #yourapp.your_ns.Example{}}, :function-name greetings}
 ;;=> my example greeting!
 
 
-(say-bye my-wrapped-example "clojure" "java")
-;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} (clojure java)] 
-;; ... {:function-args [e a b], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name say_bye}
-;;=> saying good bye from clojure to java
+(println (say-bye my-wrapped-example "clojure" "java"))
+;;=> >> LOGGING-ACCESS  [#yourapp.your_ns.Example{} (clojure java)]
+;;=> >> {:function-args [e a b], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #yourapp.your_ns.Example{}}, :function-name say-bye}
 
 
 ```
 
 ### Matcher implementation
-You can also use the [bidi-wrapper-matcher](https://github.com/tangrammer/bidi-wrapper-matcher), an implementation using [juxt/bidi](https://github.com/juxt/bidi) way
+Instead of plain functions or your own implementations of [Matcher](https://github.com/tangrammer/defrecord-wrapper/blob/master/src/defrecord_wrapper/aop.clj#L4) protocol, you can also use the [bidi-wrapper-matcher](https://github.com/tangrammer/bidi-wrapper-matcher), an implementation using [juxt/bidi](https://github.com/juxt/bidi) way
 
 ### Related projects
 * [epi-component](https://github.com/tangrammer/epi-component): facility to apply defrecord-wrapper in stuartsierra/component library

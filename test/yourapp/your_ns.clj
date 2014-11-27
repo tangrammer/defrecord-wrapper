@@ -39,31 +39,12 @@
 ;; and ... invoking wrapper
 
 (println (greetings my-wrapped-example))
-
-;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} nil]
-;; ...  {:function-args [e], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name greetings}
-;;=> my example greeting!
-
-
-(say-bye my-wrapped-example "clojure" "java")
-;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} (clojure java)]
-;; ... {:function-args [e a b], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name say_bye}
-;;=> saying good bye from clojure to java
+;; >> LOGGING-ACCESS  [#yourapp.your_ns.Example{} nil]
+;; >> {:function-args [e], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #yourapp.your_ns.Example{}}, :function-name greetings}
+;; my example greeting!
 
 
-
-
-(comment
-  ;; here your aop/Matcher implementation and fn middleware to apply
-
-(defn logging-access-protocol
-  [*fn* this & args]
-  (println ">>>>>>>>>> LOGGING-ACCESS" [this args] (meta *fn*))
-  (apply *fn* (conj args this)))
-
-(defrecord ExampleMatcher []
-  aop/Matcher
-  (match [this protocol function-name function-args]
-      ;; logging all fns calls
-      logging-access-protocol))
-)
+(println (say-bye my-wrapped-example "clojure" "java"))
+;; >> LOGGING-ACCESS  [#yourapp.your_ns.Example{} (clojure java)]
+;; >> {:function-args [e a b], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #yourapp.your_ns.Example{}}, :function-name say-bye}
+;; saying good bye from clojure to java

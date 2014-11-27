@@ -2,6 +2,19 @@
 
 This library lets you apply middleware to protocol implementations of [clojure.core/defrecord](https://clojuredocs.org/clojure.core/defrecord) in the same way as AOP does.
 
+## Releases and Dependency Information
+
+
+```clojure
+
+[tangrammer/defrecord-wrapper "0.1.2-SNAPSHOT"]
+
+```
+
+```clojure
+:dependencies [[org.clojure/clojure "1.6.0"]]
+```
+
 ## Usage
 
 TODO:

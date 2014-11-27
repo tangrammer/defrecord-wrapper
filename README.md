@@ -7,7 +7,7 @@ This library lets you apply middleware to protocol implementations of [clojure.c
 
 ```clojure
 
-[tangrammer/defrecord-wrapper "0.1.2-SNAPSHOT"]
+[tangrammer/defrecord-wrapper "0.1.3"]
 
 ```
 
@@ -55,7 +55,7 @@ This library lets you apply middleware to protocol implementations of [clojure.c
 
 (aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) (ExampleMatcher.))
 
-;; here wrapping your defrecord instance with SimpleWrapper 
+;; here wrapping your defrecord instance with SimpleWrapper
 (def my-wrapped-example (SimpleWraper. my-example-instance))
 
 

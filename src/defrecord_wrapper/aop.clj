@@ -7,7 +7,10 @@
 (extend-protocol Matcher
   nil
   (match [this protocol function-name function-args]
-    nil))
+    nil)
+  clojure.lang.Fn
+  (match [this protocol function-name function-args]
+    this))
 
 
 (defmacro code-extend-protocol

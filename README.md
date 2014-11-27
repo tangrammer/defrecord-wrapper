@@ -86,6 +86,13 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 
 ```
 
+### Matcher implementation
+You can also use the [bidi-wrapper-matcher](https://github.com/tangrammer/bidi-wrapper-matcher), an implementation using [juxt/bidi](https://github.com/juxt/bidi) way
+
+### Related projects
+* [epi-component](https://github.com/tangrammer/epi-component): facility to apply defrecord-wrapper in stuartsierra/component library
+
+
 ## License
 
 Copyright © 2014 Juan Antonio Ruz (juxt.pro)

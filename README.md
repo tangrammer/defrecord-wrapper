@@ -2,7 +2,7 @@
 
 This library lets you apply middleware to protocol implementations of [clojure.core/defrecord](https://clojuredocs.org/clojure.core/defrecord) in the same way as AOP does.
 
-## Releases and Dependency Information
+#### Releases and Dependency Information
 
 
 ```clojure
@@ -61,11 +61,16 @@ This library lets you apply middleware to protocol implementations of [clojure.c
 
 ;; and ... invoking wrapper
 
-(greetings my-wrapped-example)
-;;=> check your nrepl LOGGING-ACCESS outputs
+(println (greetings my-wrapped-example))
+
+;;=> >>>>>>>>>> LOGGING-ACCESS [#defrecord_wrapper.model.Example{} nil] {:function-args [e], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name greetings}
+;;=> my example greeting!
+
 
 (say-bye my-wrapped-example "clojure" "java")
-;;=> check your nrepl LOGGING-ACCESS outputs
+
+;;=> >>>>>>>>>> BYE FUNCTION {:function-args [e a b], :wrapper #defrecord_wrapper.aop.SimpleWrapper{:wrapped-record #your-ns.Example{}}, :function-name say_bye}
+;;=> saying good bye from clojure to java
 
 
 ```

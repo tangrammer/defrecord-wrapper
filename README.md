@@ -17,7 +17,50 @@ This library lets you apply middleware to protocol implementations of [clojure.c
 
 ## Usage
 
-TODO:
+```clojure
+(ns your-ns
+  (:require [defrecord-wrapper.aop :as aop]
+            [defrecord-wrapper.reflect :as r])
+  (:import [defrecord_wrapper.aop SimpleWrapper]))
+
+;; your protocol and defrecord definitions
+
+(defprotocol Welcome
+  (greetings [e] )
+  (say-bye [e a b])
+  )
+
+(defrecord Example []
+  Welcome
+  (greetings [this] "my example greeting!")
+  (say-bye [this a b] (str "saying good bye from " a " to " b)))
+
+
+(defn logging-access-protocol
+  [*fn* this & args]
+  (println ">>>>>>>>>> LOGGING-ACCESS" [this args] (meta *fn*))
+  (apply *fn* (conj args this)))
+
+(defrecord ExampleMatcher []
+  aop/Matcher
+  (match [this protocol function-name function-args]
+      ;; logging all fns calls
+      logging-access-protocol))
+
+(def my-example-instance (Example.))
+
+(aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) (ExampleMatcher.))
+
+(def my-wrapped-example (SimpleWraper. my-example-instance))
+
+(greetings my-wrapped-example)
+;;=> check your nrepl LOGGING-ACCESS outputs
+
+(say-bye my-wrapped-example "clojure" "java")
+;;=> check your nrepl LOGGING-ACCESS outputs
+
+
+```
 
 ## License
 

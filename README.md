@@ -16,7 +16,7 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 
 ```clojure
 
-[tangrammer/defrecord-wrapper "0.1.4"]
+[tangrammer/defrecord-wrapper "0.1.4-SNAPSHOT"]
 
 ```
 
@@ -81,10 +81,20 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 ```
 
 ### Matcher implementation
-Instead of plain functions or your own implementations of [Matcher](https://github.com/tangrammer/defrecord-wrapper/blob/master/src/defrecord_wrapper/aop.clj#L4) protocol, you can also use the [bidi-wrapper-matcher](https://github.com/tangrammer/bidi-wrapper-matcher), an implementation using [juxt/bidi](https://github.com/juxt/bidi) way
+Instead of plain functions or your own implementations of [Matcher](https://github.com/tangrammer/defrecord-wrapper/blob/master/src/defrecord_wrapper/aop.clj#L4) protocol, you can also use the SimpleProtocolMatcher as follows
+
+```clojure
+
+(aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) (aop/new-simple-protocol-matcher :protocols [Welcome] :fn logging-access-invocation))
+
+
+```
+
+
+For more detailed matching there is also a [bidi-wrapper-matcher](https://github.com/tangrammer/bidi-wrapper-matcher), an implementation using the  [juxt/bidi](https://github.com/juxt/bidi) way
 
 ### Related projects
-* [epi-component](https://github.com/tangrammer/epi-component): facility to apply defrecord-wrapper in stuartsierra/component library
+* [milesian/aop](https://github.com/milesian/aop): facility to apply defrecord-wrapper in stuartsierra/component library
 
 
 ## License

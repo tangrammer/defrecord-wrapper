@@ -12,6 +12,15 @@
   (match [this protocol function-name function-args]
     this))
 
+(defrecord SimpleProtocolMatcher [protocols fn]
+  Matcher
+  (match [this protocol function-name function-args]
+    (when  (contains? (set protocols) protocol)
+      fn)))
+
+(defn new-simple-protocol-matcher [& {:as opts}]
+  (->> opts
+       map->SimpleProtocolMatcher))
 
 (defmacro code-extend-protocol
   ([protocol matcher]

@@ -1,3 +1,5 @@
+![image](https://dl.dropboxusercontent.com/u/8688858/epicarp.gif)
+
 # defrecord-wrapper
 
 This library lets you apply middleware to protocol implementations of [clojure.core/defrecord](https://clojuredocs.org/clojure.core/defrecord) in the same way as AOP does.
@@ -101,4 +103,6 @@ For more detailed matching there is also a [bidi-wrapper-matcher](https://github
 
 Copyright © 2014 Juan Antonio Ruz (juxt.pro)
 
-Distributed under the [MIT License](http://opensource.org/licenses/MIT). This means that pieces of this library may be copied into other libraries if they don't wish to have this as an explicit dependency, as long as it is credited within the code.
+Distributed under the [MIT License](http://opensource.org/licenses/MIT). This means that pieces of this library may be copied into other libraries if they don't wish to have this as an explicit dependency, as long as it is credited within the code.   
+
+Copyright "Hesperidium" image @ [clipart](http://etc.usf.edu/clipart/)

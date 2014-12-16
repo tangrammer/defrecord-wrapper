@@ -81,15 +81,18 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 
 
 ```
+### Matchers available in tangrammer/defrecord-wrapper
+Due that milesian/aop actually uses [tangrammer/defrecord-wrapper](https://github.com/tangrammer/defrecord-wrapper/), there are a few special matchers  for free that you can be intereseted on using:
++ `nil` value that returns nil
++ `fn` value  that returns itself, (it's a shortcut to apply your-fn-middleware for all fns protocol)
++ `defrecord-wrapper.aop/SimpleProtocolMatcher` that returns your-fn-middleware when the protocol of the fn invoked matchs with any of the the protocols provided
 
-### Matcher implementation
+### SimpleProtocolMatcher implementation
 Instead of plain functions or your own implementations of [Matcher](https://github.com/tangrammer/defrecord-wrapper/blob/master/src/defrecord_wrapper/aop.clj#L4) protocol, you can also use the SimpleProtocolMatcher as follows
 
 ```clojure
 
 (aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) (aop/new-simple-protocol-matcher :protocols [Welcome] :fn logging-access-invocation))
-
-
 ```
 
 

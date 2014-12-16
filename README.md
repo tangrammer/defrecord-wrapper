@@ -92,7 +92,11 @@ Instead of plain functions or your own implementations of [Matcher](https://gith
 
 ```clojure
 
-(aop/add-extends SimpleWrapper (r/get-specific-supers my-example-instance) (aop/new-simple-protocol-matcher :protocols [Welcome] :fn logging-access-invocation))
+(aop/add-extends SimpleWrapper 
+    (r/get-specific-supers my-example-instance) 
+    (aop/new-simple-protocol-matcher 
+        :protocols [Welcome] 
+        :fn logging-access-invocation))
 ```
 
 

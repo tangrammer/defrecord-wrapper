@@ -33,6 +33,7 @@
                    (eval `(fn ~function-args#
                             (~fn-match# (with-meta ~function-ns-name# {:function-name ~(str function-name#)
                                                                        :function-args ~(str function-args#)
+                                                                       :protocol  ~(:on ~protocol)
                                                                        :wrapper ~(first function-args#)})
                                         (~(keyword "wrapped-record") ~(first function-args#)) ~@(next function-args#))))
                    (eval `(fn ~function-args#

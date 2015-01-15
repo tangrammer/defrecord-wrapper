@@ -18,7 +18,7 @@ Working with [juxt/modular](https://github.com/juxt/modular) or directly  [stuar
 
 ```clojure
 
-[tangrammer/defrecord-wrapper "0.1.5"]
+[tangrammer/defrecord-wrapper "0.1.6"]
 
 ```
 
